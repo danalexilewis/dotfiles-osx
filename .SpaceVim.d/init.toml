@@ -1,0 +1,85 @@
+#=============================================================================
+# dark_powered.toml --- dark powered configuration example for SpaceVim
+# Copyright (c) 2016-2017 Wang Shidong & Contributors
+# Author: Wang Shidong < wsdjeg at 163.com >
+# URL: https://spacevim.org
+# License: GPLv3
+#=============================================================================
+
+[options]
+  windows_leader = "ù"
+  relativenumber = false
+
+  filemanager = "defx"
+  enable_googlesuggest = 1 # Not working?
+
+  colorscheme = "SpaceVim"
+  enable_guicolors = true
+
+  buffer_index_type = 0
+  statusline_separator = "arrow"
+  statusline_inactive_separator = "bar"
+  enable_tabline_filetype_icon = true
+
+  bootstrap_after = "config#after"
+  bootstrap_before = "config#before"
+
+[[layers]]
+  name = 'autocomplete'
+  auto_completion_return_key_behavior = "smart" # Expands snippets as well
+  auto_completion_tab_key_behavior = "complete" # Ctrl-n / Ctrl-p for navigation
+
+[[layers]]
+  name = 'shell'
+  default_position = 'bottom'
+ default_height = 30
+
+[[layers]]
+  name = 'VersionControl'
+
+[[layers]]
+  name = "git"
+  git-plugin = "fugitive"
+
+[[layers]]
+  name = "github"
+
+[[layers]]
+  name = 'default' # For clipboard copy/paste
+
+[[layers]]
+  name = 'colorscheme' # Enables non-default colorschemes
+
+[[layers]]
+  name = 'core'
+  filetree_show_hidden = true
+
+[[layers]]
+  name = "tools"
+
+[[layers]]
+  name = "denite"
+
+[[layers]]
+  name="incsearch"
+
+[[layers]]
+  name = "gtags"
+  gtagslabel = "ctags"
+
+# https://spacevim.org/layers/language-server-protocol/
+[[layers]]
+  name = "lsp"
+  filetypes = ["typescript", "rust", "sh"]
+
+[[layers]]
+  name = "lang#typescript"
+
+# https://spacevim.org/layers/lang/rust/
+[[layers]]
+  name = "lang#rust"
+
+# https://spacevim.org/layers/lang/sh/
+[[layers]]
+  name = "lang#sh"
+ 

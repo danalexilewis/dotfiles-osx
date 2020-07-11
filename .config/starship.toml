@@ -1,0 +1,79 @@
+[battery]
+full_symbol = ""
+charging_symbol = ""
+discharging_symbol = "💀"
+
+[[battery.display]]
+threshold = 50
+style = "bold green"
+
+[[battery.display]]
+threshold = 30
+style = "bold yellow"
+
+[[battery.display]]
+threshold = 15
+style = "bold red"
+
+[character]
+symbol = "›"
+error_symbol = "✗"
+use_symbol_for_status = true
+vicmd_symbol = "»"
+
+[cmd_duration]
+min_time = 2000
+prefix = "🕑 "
+
+[directory]
+truncation_length = 0
+fish_style_pwd_dir_length = 1
+prefix = ""
+
+[git_branch]
+symbol = "🌱 "
+
+[git_state]
+rebase = "⚾"
+merge = "🚧"
+revert = "🐉"
+bisect = "✂"
+am = "📮"
+am_or_rebase = "📮⚾"
+cherry_pick = "🍒"
+
+[git_status]
+conflicted = "🔥"
+ahead = "👍"
+behind = "😰"
+diverged = "😵"
+untracked = "🤷"
+stashed = "📦"
+modified = "📝"
+staged = "🎭"
+renamed = "👅"
+deleted = "🗑"
+
+[hostname]
+ssh_only = false
+prefix = "⟪"
+suffix = "⟫\n"
+disabled = false
+
+[memory_usage]
+disabled = false
+show_percentage = true
+show_swap = false
+
+[package]
+symbol = "🎁 "
+
+[username]
+sho_always = true
+
+[custom.home_date_status]
+command = "git --git-dir=$HOME/.baredotfiles/ --work-tree=$HOME status --short;"
+when = """ test "$HOME" = "$PWD" """
+prefix = "\n"
+style = ""
+w
