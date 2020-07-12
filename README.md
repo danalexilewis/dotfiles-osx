@@ -11,5 +11,5 @@ ln -s dotfiles-osx/.spacemacs ~/.spacemacs
 ln -s dotfiles-osx/.spacevim ~/.spacevim
 ln -s dotfiles-osx/.zshrc ~/.zshrc
 rm  ~/Library/Application\ Support/code/User/settings.json
-ln -s dotfiles-osk/VSCodium/settings.json ~/Library/Application\ Support/code/User/settings.json
+ln -s dotfiles-osx/VSCodium/settings.json ~/Library/Application\ Support/code/User/settings.json
 ```
