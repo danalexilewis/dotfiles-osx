@@ -1,0 +1,67 @@
+{
+    "todo-tree.tree.showScanModeButton": false,
+    "vim.enableNeovim": true,
+    "vim.neovimPath": "/usr/local/bin/nvim",
+    "vim.insertModeKeyBindings": [
+        {
+            "before": ["h", "h"],
+            "after": ["<Esc>"]
+        },
+        {
+            "before": ["h", "h"],
+            "after": ["<Esc>"]
+        },
+        {
+            "before": ["h", "h"],
+            "after": ["<Esc>"]
+        },
+    ],
+    "vim.normalModeKeyBindings": [
+        {
+            "before": ["h"],
+            "after": ["h"]
+        },
+        {
+            "before": ["t"],
+            "after": ["j"]
+        },
+        {
+            "before": ["n"],
+            "after": ["k"]
+        },
+        {
+            "before": ["s"],
+            "after": ["l"]
+        },
+        {
+            "before": ["z", "z"],
+            "commands": [
+                ":wq"
+            ]
+        }
+    ],
+    "vim.visualModeKeyBindings": [
+        {
+            "before": ["h"],
+            "after": ["h"]
+        },
+        {
+            "before": ["t"],
+            "after": ["j"]
+        },
+        {
+            "before": ["n"],
+            "after": ["k"]
+        },
+        {
+            "before": ["s"],
+            "after": ["l"]
+        },
+        {
+            "before": ["z", "z"],
+            "commands": [
+                ":wq"
+            ]
+        } 
+    ]
+}
