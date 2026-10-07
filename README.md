@@ -45,29 +45,29 @@ Skip Cursor extensions with `./bootstrap --no-extensions`.
 
 Installed by `./bootstrap` / `brew bundle`:
 
-| Kind | Packages |
-| --- | --- |
-| CLI | `gh`, `git-lfs`, `vite-plus`, `postgresql@16`, `ncdu`, `mole` |
-| Core | Cursor, Ghostty, Amethyst, Lunar, T3 Code, Claude, Claude Code, Codex, 1Password + CLI |
-| Everyday | Zen, Obsidian, Figma, Linear, Discord, Signal, Raycast, CleanShot |
+| Kind     | Packages                                                                               |
+| -------- | -------------------------------------------------------------------------------------- |
+| CLI      | `gh`, `git-lfs`, `vite-plus`, `postgresql@16`, `ncdu`, `mole`                          |
+| Core     | Cursor, Ghostty, Amethyst, Lunar, T3 Code, Claude, Claude Code, Codex, 1Password + CLI |
+| Everyday | Zen, Obsidian, Figma, Linear, Discord, Signal, Raycast, CleanShot                      |
 
 Intentionally **not** included: Docker, Warp, tmux, worktrunk, Go, pgAdmin, Flameshot, PostgreSQL 14.
 
 ## Layout
 
-| Path | Linked to |
-| --- | --- |
-| `zsh/zshrc` | `~/.zshrc` |
-| `zsh/zshenv` | `~/.zshenv` |
-| `bash/bashrc` | `~/.bashrc` |
-| `git/config` | `~/.config/git/config` |
-| `git/ignore` | `~/.config/git/ignore` |
-| `cursor/*` | Cursor User dir + `~/.cursor/mcp.json` + skills |
-| `t3/*` | `~/.t3/userdata/` |
-| `codex/config.toml` | `~/.codex/config.toml` |
-| `vite-plus/config.json` | `~/.config/vite-plus/config.json` |
-| `ghostty/config.ghostty` | `~/.config/ghostty/config.ghostty` |
-| `amethyst/amethyst.yml` | `~/.config/amethyst/amethyst.yml` |
+| Path                     | Linked to                                       |
+| ------------------------ | ----------------------------------------------- |
+| `zsh/zshrc`              | `~/.zshrc`                                      |
+| `zsh/zshenv`             | `~/.zshenv`                                     |
+| `bash/bashrc`            | `~/.bashrc`                                     |
+| `git/config`             | `~/.config/git/config`                          |
+| `git/ignore`             | `~/.config/git/ignore`                          |
+| `cursor/*`               | Cursor User dir + `~/.cursor/mcp.json` + skills |
+| `t3/*`                   | `~/.t3/userdata/`                               |
+| `codex/config.toml`      | `~/.codex/config.toml`                          |
+| `vite-plus/config.json`  | `~/.config/vite-plus/config.json`               |
+| `ghostty/config.ghostty` | `~/.config/ghostty/config.ghostty`              |
+| `amethyst/amethyst.yml`  | `~/.config/amethyst/amethyst.yml`               |
 
 `links.conf` is the source of truth. `./install` backs up existing targets under `~/.dotfiles-backup/<timestamp>/` then symlinks. Re-run after `git pull`.
 
