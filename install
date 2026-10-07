@@ -121,7 +121,7 @@ print_hints() {
   if ! command -v brew >/dev/null 2>&1; then
     echo "  - Homebrew missing: https://brew.sh"
   elif [[ -f "$ROOT/Brewfile" ]]; then
-    echo "  - apps: brew bundle --file=$ROOT/Brewfile"
+    echo "  - apps: $ROOT/install-apps"
   fi
   if ! command -v vp >/dev/null 2>&1 && [[ ! -x "$HOME/.local/share/vite-plus/bin/vp" ]]; then
     echo "  - Vite+ (vp) missing: brew install vite-plus"

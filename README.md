@@ -16,18 +16,19 @@ git clone git@github.com:danalexilewis/dotfiles-osx.git ~/repos/dotfiles-osx
 
 That runs, in order:
 
-1. Homebrew (if missing)
-2. `brew bundle` from [`Brewfile`](Brewfile)
-3. oh-my-zsh (if missing)
-4. `./install` (symlinks + Cursor extensions)
-5. `vp env default lts`
-6. `./doctor`
+1. [`./install-apps`](install-apps) — Homebrew, App Store (including Xcode), `brew bundle`, CLIs, Expo toolchain
+2. oh-my-zsh (if missing)
+3. `./install` (symlinks + Cursor extensions)
+4. `vp env default lts`
+5. `./doctor`
 
 Skip Cursor extensions with `./bootstrap --no-extensions`.
 
 ### Still manual once per machine
 
+- `./install-apps` asks for your password while setting up Xcode
 - Sign in to 1Password, then `gh auth login`
+- `eas login`, when you first use EAS Build
 - Activate Lunar Pro in the Lunar app
 - Sign in to Cursor / Claude / Codex / T3
 - OAuth for Figma / Linear / PostHog when first used
@@ -43,15 +44,19 @@ Skip Cursor extensions with `./bootstrap --no-extensions`.
 
 ## Brewfile (apps)
 
-Installed by `./bootstrap` / `brew bundle`:
+Installed by `./install-apps` (App Store apps first, then `brew bundle`):
 
-| Kind     | Packages                                                                               |
-| -------- | -------------------------------------------------------------------------------------- |
-| CLI      | `gh`, `git-lfs`, `vite-plus`, `postgresql@16`, `ncdu`, `mole`                          |
-| Core     | Cursor, Ghostty, Amethyst, Lunar, T3 Code, Claude, Claude Code, Codex, 1Password + CLI |
-| Everyday | Zen, Obsidian, Figma, Linear, Discord, Signal, Raycast, CleanShot                      |
+| Kind      | Packages                                                                                                   |
+| --------- | ---------------------------------------------------------------------------------------------------------- |
+| CLI       | `gh`, `git-lfs`, `vite-plus`, `postgresql@16`, `ncdu`, `mole`, `mas`, Watchman, CocoaPods                   |
+| Core      | Cursor, Ghostty, Amethyst, Lunar, T3 Code, Claude, Claude Code (`claude`), Codex (`codex`), 1Password + CLI |
+| Everyday  | Zen, Obsidian, AFFiNE, Figma, Linear, Discord, CleanShot, Loom, Screen Studio, Zoom, Whisper Transcription |
+| App Store | 1Blocker, Xcode                                                                                            |
+| Expo      | Zulu JDK 17, Android Studio, Android command-line tools, Android SDK 36, `eas`                             |
 
-Intentionally **not** included: Docker, Warp, tmux, worktrunk, Go, pgAdmin, Flameshot, PostgreSQL 14.
+`./install-apps` signs in to the App Store and installs those apps before `brew bundle`. After that it points `xcode-select` at Xcode, accepts the license, and downloads the iOS simulator platform. The Cursor app cask does not install the agent CLI, so the script installs `agent` when `~/.local/bin/agent` is missing. `claude` and `codex` come from the `claude-code` and `codex` casks; the script installs either cask again if that command is not on `PATH`.
+
+Intentionally **not** included: Docker, Warp, tmux, worktrunk, Go, pgAdmin, Flameshot, PostgreSQL 14, Raycast, Signal.
 
 ## Layout
 
@@ -95,7 +100,8 @@ Project-specific servers belong in the Eddy repos:
 
 ## Scripts
 
-- `./bootstrap` — one-shot new machine (brew + omz + install + vp default + doctor)
+- `./bootstrap` — one-shot new machine (apps + omz + install + vp default + doctor)
+- `./install-apps` — App Store apps, Xcode, `brew bundle`, Cursor agent / Claude Code / Codex CLIs, Expo toolchain
 - `./install` — symlink everything (`--dry-run`, `--extensions`)
 - `./doctor` — check links, overrides, secret patterns, list global MCPs
 - `.githooks/pre-commit` — blocks obvious token strings (enabled via `core.hooksPath` on install)

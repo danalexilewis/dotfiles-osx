@@ -15,12 +15,11 @@ Assumes:
   - you can approve Homebrew / app install prompts
 
 Steps:
-  1. Install Homebrew if missing
-  2. brew bundle (Brewfile)
-  3. Install oh-my-zsh if missing
-  4. ./install (symlinks)
-  5. vp env default lts
-  6. ./doctor
+  1. ./install-apps (Homebrew, App Store, Xcode, brew, CLIs, Expo)
+  2. Install oh-my-zsh if missing
+  3. ./install (symlinks)
+  4. vp env default lts
+  5. ./doctor
 EOF
 }
 
@@ -32,33 +31,6 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
-
-ensure_homebrew() {
-  if command -v brew >/dev/null 2>&1; then
-    eval "$(brew shellenv)"
-    return 0
-  fi
-  if [[ -x /opt/homebrew/bin/brew ]]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-    return 0
-  fi
-  if [[ -x /usr/local/bin/brew ]]; then
-    eval "$(/usr/local/bin/brew shellenv)"
-    return 0
-  fi
-
-  echo "Installing Homebrew..."
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-  if [[ -x /opt/homebrew/bin/brew ]]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-  elif [[ -x /usr/local/bin/brew ]]; then
-    eval "$(/usr/local/bin/brew shellenv)"
-  else
-    echo "Homebrew install finished but brew not found on PATH" >&2
-    exit 1
-  fi
-}
 
 ensure_oh_my_zsh() {
   if [[ -d "$HOME/.oh-my-zsh" ]]; then
@@ -72,10 +44,7 @@ ensure_oh_my_zsh() {
 
 main() {
   echo "dotfiles-osx bootstrap (root=$ROOT)"
-  ensure_homebrew
-
-  echo "brew bundle..."
-  brew bundle --file="$ROOT/Brewfile"
+  "$ROOT/install-apps"
 
   # git-lfs filter needs to be active once per machine
   if command -v git-lfs >/dev/null 2>&1; then
@@ -104,7 +73,9 @@ main() {
 Bootstrap complete.
 
 Still manual (one-time per machine):
+  - ./install-apps asks for your password while setting up Xcode
   - Sign in to 1Password, then: gh auth login
+  - eas login, when you first use EAS Build
   - Activate Lunar Pro in the Lunar app
   - Sign in to Cursor / Claude / Codex / T3 as needed
   - OAuth for Figma / Linear / PostHog MCP when first used
