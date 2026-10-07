@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+# Verify symlink install and flag common problems.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+LINKS_FILE="$ROOT/links.conf"
+OK=0
+WARN=0
+FAIL=0
+
+expand_home() {
+  # Escape ~ in ${var#…} so bash does not tilde-expand the pattern to $HOME.
+  case "$1" in
+    "~") printf '%s\n' "$HOME" ;;
+    "~/"*) printf '%s\n' "$HOME/${1#\~/}" ;;
+    *) printf '%s\n' "$1" ;;
+  esac
+}
+
+status_ok() { echo "  ok   $1"; OK=$((OK + 1)); }
+status_warn() { echo "  warn $1"; WARN=$((WARN + 1)); }
+status_fail() { echo "  fail $1"; FAIL=$((FAIL + 1)); }
+
+check_links() {
+  echo "Links"
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [[ -z "$line" || "$line" == \#* ]] && continue
+    [[ "$line" != *" -> "* ]] && continue
+    local src_rel="${line%% -> *}"
+    local dest_spec="${line#* -> }"
+    src_rel="${src_rel%"${src_rel##*[![:space:]]}"}"
+    dest_spec="${dest_spec#"${dest_spec%%[![:space:]]*}"}"
+    local src="$ROOT/$src_rel"
+    local dest
+    dest="$(expand_home "$dest_spec")"
+
+    if [[ ! -e "$src" && ! -L "$src" ]]; then
+      status_fail "$src_rel (missing in repo)"
+      continue
+    fi
+    if [[ -L "$dest" ]]; then
+      local current
+      current="$(readlink "$dest")"
+      if [[ "$current" == "$src" ]]; then
+        status_ok "$dest"
+      else
+        status_fail "$dest -> $current (expected $src)"
+      fi
+    elif [[ -e "$dest" ]]; then
+      status_warn "$dest exists but is not a symlink (app may have replaced it)"
+      if command -v diff >/dev/null 2>&1; then
+        diff -u "$src" "$dest" | head -40 || true
+      fi
+    else
+      status_fail "$dest (missing; run ./install)"
+    fi
+  done <"$LINKS_FILE"
+}
+
+check_overrides() {
+  echo
+  echo "Override risks"
+  if [[ -e "$HOME/.amethyst.yml" ]]; then
+    status_warn "~/.amethyst.yml exists and overrides ~/.config/amethyst/amethyst.yml"
+  else
+    status_ok "no ~/.amethyst.yml override"
+  fi
+
+  local ghostty_app_support="$HOME/Library/Application Support/com.mitchellh.ghostty"
+  for f in "$ghostty_app_support/config" "$ghostty_app_support/config.ghostty"; do
+    if [[ -e "$f" ]]; then
+      status_warn "$f loads after ~/.config/ghostty and can override it"
+    fi
+  done
+  if [[ ! -e "$ghostty_app_support/config" && ! -e "$ghostty_app_support/config.ghostty" ]]; then
+    status_ok "no Ghostty Application Support override"
+  fi
+}
+
+check_secrets() {
+  echo
+  echo "Secret scan (tracked files)"
+  local pattern='phx_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|Bearer [A-Za-z0-9._-]{20,}'
+  local matches
+  matches=$(git -C "$ROOT" grep -nE "$pattern" -- . ':(exclude).githooks/*' ':(exclude)doctor' ':(exclude)install' 2>/dev/null || true)
+  if [[ -n "$matches" ]]; then
+    status_fail "possible secrets in tracked files:"
+    echo "$matches"
+  else
+    status_ok "no obvious secret patterns"
+  fi
+}
+
+check_mcp() {
+  echo
+  echo "Global MCP servers"
+  local mcp="$HOME/.cursor/mcp.json"
+  if [[ -f "$mcp" ]] && command -v python3 >/dev/null 2>&1; then
+    python3 - <<'PY' "$mcp"
+import json, sys
+path = sys.argv[1]
+try:
+    data = json.load(open(path))
+except Exception as e:
+    print(f"  fail could not parse {path}: {e}")
+    raise SystemExit(0)
+servers = sorted((data.get("mcpServers") or {}).keys())
+if not servers:
+    print("  warn none configured")
+else:
+    for name in servers:
+        print(f"  ok   {name}")
+PY
+  else
+    status_warn "could not list MCP servers"
+  fi
+}
+
+main() {
+  echo "dotfiles-osx doctor (root=$ROOT)"
+  check_links
+  check_overrides
+  check_secrets
+  check_mcp
+  echo
+  echo "Summary: $OK ok, $WARN warn, $FAIL fail"
+  if [[ "$FAIL" -gt 0 ]]; then
+    exit 1
+  fi
+}
+
+main

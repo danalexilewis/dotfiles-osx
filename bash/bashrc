@@ -1,0 +1,12 @@
+export PATH="$HOME/.local/bin${PATH:+:$PATH}"
+
+if command -v wt >/dev/null 2>&1; then
+  eval "$(command wt config shell init bash)"
+fi
+
+# Vite+ bin (https://viteplus.dev)
+if [[ -f "$HOME/.config/vite-plus/env" ]]; then
+  . "$HOME/.config/vite-plus/env"
+fi
+
+[[ -f "$HOME/.bashrc.local" ]] && . "$HOME/.bashrc.local"

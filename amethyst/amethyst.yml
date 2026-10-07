@@ -1,0 +1,41 @@
+# Amethyst — curated from this Mac's preferences.
+# Only non-default values are listed (defaults can conflict; see Amethyst docs).
+# Restart Amethyst after changes (mod2 + z by default).
+
+layouts:
+  - tall
+  - middle-wide
+  - wide
+  - 3column-left
+
+mod3:
+  - control
+  - command
+
+cycle-layout:
+  mod: mod3
+  key: w
+
+cycle-layout-backward:
+  mod: mod3
+  key: m
+
+expand-main:
+  mod: mod3
+  key: up
+
+shrink-main:
+  mod: mod3
+  key: down
+
+swap-ccw:
+  mod: mod3
+  key: left
+
+swap-cw:
+  mod: mod3
+  key: right
+
+mouse-swaps-windows: true
+mouse-resizes-windows: true
+new-windows-to-main: true

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Block commits that look like they contain secrets.
+set -euo pipefail
+
+# Require enough trailing entropy so words like "Task-Graph" do not match.
+pattern='phx_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|Bearer [A-Za-z0-9._-]{20,}'
+
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
+  against=HEAD
+else
+  against=$(git hash-object -t tree /dev/null)
+fi
+
+matches=$(git diff --cached --name-only --diff-filter=ACM -z "$against" \
+  | xargs -0 grep -nE "$pattern" 2>/dev/null || true)
+
+if [[ -n "$matches" ]]; then
+  echo "pre-commit: blocked possible secrets in staged files:" >&2
+  echo "$matches" >&2
+  echo "Remove the secrets (use \${env:NAME} for MCP keys) and try again." >&2
+  exit 1
+fi

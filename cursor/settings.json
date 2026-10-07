@@ -1,0 +1,46 @@
+{
+  "window.commandCenter": 1,
+  "git.autofetch": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "cursor.cpp.disabledLanguages": [],
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.confirmDelete": false,
+  "diffEditor.ignoreTrimWhitespace": true,
+  "security.promptForLocalFileProtocolHandling": false,
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.tabSize": 2,
+  "git.ignoreRebaseWarning": true,
+  "cursor.composer.shouldChimeAfterChatFinishes": true,
+  "editor.formatOnSave": true,
+  "notebook.formatOnSave.enabled": true,
+  "path-intellisense.autoSlashAfterDirectory": true,
+  "path-intellisense.autoTriggerNextSuggestion": true,
+  "path-intellisense.showHiddenFiles": true,
+  "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+  "eslint.format.enable": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "cursor.composer.usageSummaryDisplay": "always",
+  "explorer.confirmPasteNative": false,
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "git.openRepositoryInParentFolders": "never",
+  "files.autoSave": "onFocusChange",
+  "workbench.colorTheme": "Cursor Dark High Contrast",
+  "workbench.preferredDarkColorTheme": "Cursor Dark High Contrast",
+  "window.autoDetectColorScheme": true,
+  "svelte.enable-ts-plugin": true,
+  "cursor.composer.codeBlockWordWrap": true,
+  "cursor.composer.queueMessageDefaultBehavior": "steer",
+  "markyMarkdown.statsShowReadingTime": true,
+  "markyMarkdown.statsShowWords": true,
+  "markyMarkdown.statsShowLines": false,
+  "markyMarkdown.statsShowCharacters": false
+}

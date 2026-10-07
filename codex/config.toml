@@ -1,0 +1,25 @@
+model = "gpt-5.3-codex"
+tool_output_token_limit = 25000
+personality = "pragmatic"
+model_reasoning_effort = "xhigh"
+
+[projects."/Users/dan/repos/eddy/app"]
+trust_level = "trusted"
+
+[projects."/Users/dan/repos/eddy/project-workbench"]
+trust_level = "trusted"
+
+[projects."/Users/dan/gt"]
+trust_level = "trusted"
+
+[notice]
+"hide_gpt-5.1-codex-max_migration_prompt" = true
+
+[notice.model_migrations]
+"gpt-5.1-codex-max" = "gpt-5.3-codex"
+
+[plugins."linear@openai-curated"]
+enabled = true
+
+[plugins."github@openai-curated"]
+enabled = true

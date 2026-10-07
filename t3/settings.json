@@ -1,0 +1,25 @@
+{
+  "projectSettingsFolded": true,
+  "providers": {
+    "cursor": {
+      "enabled": false
+    },
+    "grok": {
+      "enabled": false
+    },
+    "opencode": {
+      "enabled": false
+    }
+  },
+  "providerInstances": {
+    "cursor": {
+      "driver": "cursor",
+      "enabled": true,
+      "config": {
+        "binaryPath": "cursor-agent",
+        "apiEndpoint": "",
+        "customModels": []
+      }
+    }
+  }
+}
