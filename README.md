@@ -1,35 +1,57 @@
 # dotfiles-osx
 
-Curated macOS config for Cursor, T3 Code, Codex, Ghostty, Amethyst, zsh, and Vite+.
+Curated macOS config + Homebrew apps for a fresh AI/dev machine.
 Runtime state (caches, OAuth tokens, conversation DBs) stays out of Git.
 
-## Bootstrap (new Mac)
+## One-shot bootstrap (new Mac)
 
-1. Install your apps yourself (Cursor, Ghostty, Amethyst, Homebrew tools, etc.).
-2. Clone and link:
+After macOS setup, with network and a terminal:
 
 ```bash
+# 1. Install Homebrew if you do not have it yet (bootstrap also does this)
+# 2. Clone + bootstrap
 git clone git@github.com:danalexilewis/dotfiles-osx.git ~/repos/dotfiles-osx
-~/repos/dotfiles-osx/install
+~/repos/dotfiles-osx/bootstrap
 ```
 
-3. Optional: install Cursor extensions from the list:
+That runs, in order:
 
-```bash
-~/repos/dotfiles-osx/install --extensions
-```
+1. Homebrew (if missing)
+2. `brew bundle` from [`Brewfile`](Brewfile)
+3. oh-my-zsh (if missing)
+4. `./install` (symlinks + Cursor extensions)
+5. `vp env default lts`
+6. `./doctor`
 
-4. Verify:
+Skip Cursor extensions with `./bootstrap --no-extensions`.
 
-```bash
-~/repos/dotfiles-osx/doctor
-```
+### Still manual once per machine
+
+- Sign in to 1Password, then `gh auth login`
+- Activate Lunar Pro in the Lunar app
+- Sign in to Cursor / Claude / Codex / T3
+- OAuth for Figma / Linear / PostHog when first used
+- Host-only secrets in `~/.zshrc.local`
+- SSH key for GitHub if you clone via SSH before 1Password/gh is ready  
+  (HTTPS clone works too: `git clone https://github.com/danalexilewis/dotfiles-osx.git`)
 
 ## Design rules
 
 - **Do not modify global configuration through an app UI unless the change is represented in this repository.**
 - **No project-specific MCP may be installed globally.** Global MCPs stay rare (Chrome DevTools, Figma, agentmemory). Everything else lives in the project’s `.cursor/mcp.json`.
 - **Never commit secrets.** Use `${env:NAME}` in MCP configs. Per-machine values go in `~/.zshrc.local` and `~/.gitconfig`.
+
+## Brewfile (apps)
+
+Installed by `./bootstrap` / `brew bundle`:
+
+| Kind | Packages |
+| --- | --- |
+| CLI | `gh`, `git-lfs`, `vite-plus`, `postgresql@16`, `ncdu`, `mole` |
+| Core | Cursor, Ghostty, Amethyst, Lunar, T3 Code, Claude, Claude Code, Codex, 1Password + CLI |
+| Everyday | Zen, Obsidian, Figma, Linear, Discord, Signal, Raycast, CleanShot |
+
+Intentionally **not** included: Docker, Warp, tmux, worktrunk, Go, pgAdmin, Flameshot, PostgreSQL 14.
 
 ## Layout
 
@@ -58,22 +80,7 @@ git clone git@github.com:danalexilewis/dotfiles-osx.git ~/repos/dotfiles-osx
 
 ## Node / package managers
 
-Vite+ (`vp env`) manages Node and package-manager shims. Project pins use `.node-version`, `devEngines`, `engines.node`, or `.nvmrc`.
-
-Set a global default once:
-
-```bash
-vp env default lts
-```
-
-If you still have the old `n` / Homebrew Node stack:
-
-```bash
-sudo n uninstall && sudo rm -rf /usr/local/n
-brew uninstall n node@22 pnpm
-```
-
-Keep Homebrew `node` if the `vite-plus` formula depends on it; shims still win on PATH.
+Vite+ (`vp env`) manages Node and package-manager shims. Project pins use `.node-version`, `devEngines`, `engines.node`, or `.nvmrc`. Bootstrap sets `vp env default lts`.
 
 ## Pi
 
@@ -81,13 +88,14 @@ When you start using pi, copy `pi/settings.json.example` to `pi/settings.json`, 
 
 ## Eddy project MCPs
 
-Project-specific servers belong in the Eddy repos (created on this machine, left for you to commit there if you want):
+Project-specific servers belong in the Eddy repos:
 
 - `~/repos/eddy/app/.cursor/mcp.json` — PostHog (OAuth), Sentry, Chakra UI, Linear
 - `~/repos/eddy/eddy.works/.cursor/mcp.json` — PostHog (OAuth), Mux, Linear
 
 ## Scripts
 
+- `./bootstrap` — one-shot new machine (brew + omz + install + vp default + doctor)
 - `./install` — symlink everything (`--dry-run`, `--extensions`)
 - `./doctor` — check links, overrides, secret patterns, list global MCPs
 - `.githooks/pre-commit` — blocks obvious token strings (enabled via `core.hooksPath` on install)

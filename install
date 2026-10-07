@@ -114,15 +114,17 @@ configure_hooks() {
 
 print_hints() {
   echo
-  echo "Hints (not installed by this script):"
+  echo "Hints (not installed by this script — use ./bootstrap on a new Mac):"
   if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
     echo "  - oh-my-zsh missing: https://ohmyz.sh"
   fi
-  if ! command -v vp >/dev/null 2>&1 && [[ ! -x "$HOME/.local/share/vite-plus/bin/vp" ]]; then
-    echo "  - Vite+ (vp) missing: https://viteplus.dev"
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "  - Homebrew missing: https://brew.sh"
+  elif [[ -f "$ROOT/Brewfile" ]]; then
+    echo "  - apps: brew bundle --file=$ROOT/Brewfile"
   fi
-  if ! command -v wt >/dev/null 2>&1; then
-    echo "  - worktrunk (wt) missing: brew install worktrunk"
+  if ! command -v vp >/dev/null 2>&1 && [[ ! -x "$HOME/.local/share/vite-plus/bin/vp" ]]; then
+    echo "  - Vite+ (vp) missing: brew install vite-plus"
   fi
 }
 

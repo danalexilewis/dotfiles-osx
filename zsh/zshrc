@@ -20,8 +20,11 @@ typeset -U path PATH
 path=("$HOME/.local/bin" $path)
 
 # PostgreSQL client (Homebrew keg-only)
-if [[ -d "$(brew --prefix postgresql@16 2>/dev/null)/bin" ]]; then
-  path=("$(brew --prefix postgresql@16)/bin" $path)
+if command -v brew >/dev/null 2>&1; then
+  pg_prefix="$(brew --prefix postgresql@16 2>/dev/null || true)"
+  if [[ -n "$pg_prefix" && -d "$pg_prefix/bin" ]]; then
+    path=("$pg_prefix/bin" $path)
+  fi
 fi
 
 # pnpm global store (when used outside Vite+ managed mode)
@@ -30,13 +33,6 @@ case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) path=("$PNPM_HOME" $path) ;;
 esac
-
-alias dockerkill='docker ps -q -a | xargs docker stop; docker ps -q -a | xargs docker rm'
-
-# worktrunk
-if command -v wt >/dev/null 2>&1; then
-  eval "$(command wt config shell init zsh)"
-fi
 
 # Vite+ shims last so they win over Homebrew node
 if [[ -f "$HOME/.config/vite-plus/env" ]]; then

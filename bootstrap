@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+# One-shot new-machine setup: Homebrew apps + symlink config.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+INSTALL_EXTENSIONS=1
+
+usage() {
+  cat <<'EOF'
+Usage: ./bootstrap [--no-extensions]
+
+Assumes:
+  - macOS Apple Silicon or Intel
+  - network access
+  - you can approve Homebrew / app install prompts
+
+Steps:
+  1. Install Homebrew if missing
+  2. brew bundle (Brewfile)
+  3. Install oh-my-zsh if missing
+  4. ./install (symlinks)
+  5. vp env default lts
+  6. ./doctor
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --no-extensions) INSTALL_EXTENSIONS=0 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "Unknown option: $1" >&2; usage; exit 1 ;;
+  esac
+  shift
+done
+
+ensure_homebrew() {
+  if command -v brew >/dev/null 2>&1; then
+    eval "$(brew shellenv)"
+    return 0
+  fi
+  if [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+    return 0
+  fi
+  if [[ -x /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+    return 0
+  fi
+
+  echo "Installing Homebrew..."
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+  if [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -x /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  else
+    echo "Homebrew install finished but brew not found on PATH" >&2
+    exit 1
+  fi
+}
+
+ensure_oh_my_zsh() {
+  if [[ -d "$HOME/.oh-my-zsh" ]]; then
+    echo "oh-my-zsh: already installed"
+    return 0
+  fi
+  echo "Installing oh-my-zsh..."
+  RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+}
+
+main() {
+  echo "dotfiles-osx bootstrap (root=$ROOT)"
+  ensure_homebrew
+
+  echo "brew bundle..."
+  brew bundle --file="$ROOT/Brewfile"
+
+  # git-lfs filter needs to be active once per machine
+  if command -v git-lfs >/dev/null 2>&1; then
+    git lfs install --skip-repo >/dev/null
+  fi
+
+  ensure_oh_my_zsh
+
+  if [[ "$INSTALL_EXTENSIONS" -eq 1 ]]; then
+    "$ROOT/install" --extensions
+  else
+    "$ROOT/install"
+  fi
+
+  if command -v vp >/dev/null 2>&1; then
+    echo "vp env default lts"
+    vp env default lts || true
+  else
+    echo "warn: vp not on PATH yet; open a new shell and run: vp env default lts" >&2
+  fi
+
+  "$ROOT/doctor"
+
+  cat <<'EOF'
+
+Bootstrap complete.
+
+Still manual (one-time per machine):
+  - Sign in to 1Password, then: gh auth login
+  - Activate Lunar Pro in the Lunar app
+  - Sign in to Cursor / Claude / Codex / T3 as needed
+  - OAuth for Figma / Linear / PostHog MCP when first used
+  - Put host-only secrets in ~/.zshrc.local
+EOF
+}
+
+main
