@@ -1,6 +1,6 @@
 # Homebrew bundle for a fresh macOS AI/dev machine.
-# Install: ./install-apps   (App Store sign-in, then brew bundle)
-# Full machine: ./bootstrap
+# Install apps/tooling: ./install-apps
+# Full machine setup: ./bootstrap
 
 # --- CLI ---
 brew "gh"
@@ -11,9 +11,10 @@ brew "ncdu"
 brew "mole"
 brew "mas"
 
-# Expo local builds (iOS needs Xcode from the App Store section below)
+# --- Expo / mobile development ---
 brew "watchman"
 brew "cocoapods"
+
 cask "zulu@17"
 cask "android-studio"
 cask "android-commandlinetools"
@@ -27,7 +28,9 @@ cask "amethyst"
 cask "lunar"
 cask "t3-code"
 cask "claude"
-# CLI binaries. The desktop casks do not install these.
+
+# CLI binaries.
+# The desktop apps do not install these.
 cask "claude-code"
 cask "codex"
 
@@ -42,10 +45,11 @@ cask "cleanshot"
 cask "loom"
 cask "screen-studio"
 cask "zoom"
+
 # Display name is Whisper Transcription
 cask "macwhisper"
 
-# --- App Store ---
-# ./install-apps signs in and installs these before brew bundle.
+# --- Mac App Store ---
+# install-apps handles these separately before brew bundle.
 mas "1Blocker", id: 1365531024
 mas "Xcode", id: 497799835

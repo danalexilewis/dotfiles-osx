@@ -1,30 +1,37 @@
 #!/usr/bin/env bash
-# App Store apps first, then Homebrew bundle.
+# One-shot application/tooling installer for a fresh macOS machine.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 BREWFILE="$ROOT/Brewfile"
-# 150 * 2s = 5 minutes to sign in.
-SIGNIN_ATTEMPTS=150
 
 usage() {
   cat <<'EOF'
 Usage: ./install-apps
 
   1. Install Homebrew if missing
-  2. Mac App Store apps from the Brewfile (sign-in required), including Xcode
-  3. Xcode license, command-line tools, and the iOS simulator platform
-  4. brew bundle (Brewfile)
-  5. Cursor agent CLI, if the Cursor app did not install it
-  6. Confirm claude and codex are on PATH (Homebrew casks claude-code and codex)
-  7. Android SDK 36 and eas-cli for Expo
+  2. Install Mac App Store apps from the Brewfile, including Xcode
+  3. Configure Xcode and iOS simulator support
+  4. Run brew bundle, skipping MAS apps already handled above
+  5. Install Cursor agent CLI if missing
+  6. Verify Claude and Codex CLIs
+  7. Configure Android SDK 36 using the modern Android CLI
+  8. Create an Android emulator if needed
+  9. Install eas-cli for Expo
 EOF
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -h|--help) usage; exit 0 ;;
-    *) echo "Unknown option: $1" >&2; usage; exit 1 ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      usage
+      exit 1
+      ;;
   esac
   shift
 done
@@ -34,10 +41,12 @@ ensure_homebrew() {
     eval "$(brew shellenv)"
     return 0
   fi
+
   if [[ -x /opt/homebrew/bin/brew ]]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
     return 0
   fi
+
   if [[ -x /usr/local/bin/brew ]]; then
     eval "$(/usr/local/bin/brew shellenv)"
     return 0
@@ -51,14 +60,21 @@ ensure_homebrew() {
   elif [[ -x /usr/local/bin/brew ]]; then
     eval "$(/usr/local/bin/brew shellenv)"
   else
-    echo "Homebrew install finished but brew not found on PATH" >&2
+    echo "Homebrew install finished but brew was not found." >&2
     exit 1
   fi
 }
 
-# Prints "id<TAB>name" for each `mas "Name", id: 123` line in the Brewfile.
+# Prints:
+#
+#   id<TAB>name
+#
+# for Brewfile entries such as:
+#
+#   mas "Xcode", id: 497799835
 brewfile_mas_apps() {
   local line
+
   while IFS= read -r line || [[ -n "$line" ]]; do
     if [[ "$line" =~ ^[[:space:]]*mas[[:space:]]+\"([^\"]+)\"[[:space:]]*,[[:space:]]*id:[[:space:]]*([0-9]+) ]]; then
       printf '%s\t%s\n' "${BASH_REMATCH[2]}" "${BASH_REMATCH[1]}"
@@ -70,94 +86,121 @@ ensure_mas() {
   if command -v mas >/dev/null 2>&1; then
     return 0
   fi
+
   echo "Installing mas..."
   brew install mas
 }
 
-wait_for_app_store_account() {
-  local account attempt
-  if account="$(mas account 2>/dev/null)"; then
-    echo "App Store: $account"
+ensure_app_store_ready() {
+  # Modern mas no longer has a reliable `mas account` check.
+  # If mas itself can talk to the App Store, continue.
+  if mas list >/dev/null 2>&1; then
     return 0
   fi
 
-  if [[ ! -t 1 ]]; then
-    echo "App Store is not signed in. Run ./install-apps in a terminal and sign in." >&2
+  if [[ ! -t 0 ]]; then
+    echo "App Store authentication may be required." >&2
+    echo "Run ./install-apps interactively from Terminal." >&2
     exit 1
   fi
 
-  echo "App Store is not signed in."
-  echo "Opening the App Store. Sign in, and this script will continue."
+  echo "App Store authentication may be required."
+  echo "Opening the App Store..."
   open -a "App Store"
 
-  attempt=0
-  while [[ "$attempt" -lt "$SIGNIN_ATTEMPTS" ]]; do
-    if account="$(mas account 2>/dev/null)"; then
-      echo "App Store: $account"
-      return 0
-    fi
-    if [[ $((attempt % 15)) -eq 0 ]]; then
-      echo "Waiting for App Store sign-in..."
-    fi
-    sleep 2
-    attempt=$((attempt + 1))
-  done
-
-  echo "Timed out waiting for an App Store sign-in." >&2
-  exit 1
+  echo
+  echo "Sign into the App Store if needed, then press Enter to continue."
+  read -r
 }
 
 app_store_installed() {
   local id="$1"
-  mas list 2>/dev/null | awk '{print $1}' | grep -qx "$id"
+
+  mas list 2>/dev/null |
+    awk '{print $1}' |
+    grep -qx "$id"
+}
+
+install_mas_apps() {
+  local id name
+
+  while IFS=$'\t' read -r id name; do
+    [[ -z "$id" ]] && continue
+
+    if app_store_installed "$id"; then
+      echo "App Store: $name already installed"
+      continue
+    fi
+
+    echo "App Store: installing $name"
+
+    if ! mas get "$id"; then
+      echo "App Store: mas get failed; trying mas install"
+
+      if ! mas install "$id"; then
+        echo "App Store: failed to install $name" >&2
+        exit 1
+      fi
+    fi
+  done < <(brewfile_mas_apps)
 }
 
 brewfile_has_mas_id() {
   local id="$1"
   local line
+
   while IFS= read -r line || [[ -n "$line" ]]; do
     if [[ "$line" =~ id:[[:space:]]*${id}([^0-9]|$) ]]; then
       return 0
     fi
   done <"$BREWFILE"
+
   return 1
 }
 
 wait_for_xcode() {
   local dev="/Applications/Xcode.app/Contents/Developer"
   local attempt=0
+
   if ! brewfile_has_mas_id 497799835; then
     return 0
   fi
+
   while [[ ! -d "$dev" && "$attempt" -lt 120 ]]; do
     if [[ "$attempt" -eq 0 ]]; then
-      echo "Waiting for Xcode.app (the App Store download is large)..."
+      echo "Waiting for Xcode.app to finish installing..."
     fi
+
     sleep 5
     attempt=$((attempt + 1))
   done
+
   if [[ ! -d "$dev" ]]; then
-    echo "Xcode.app did not appear in /Applications" >&2
+    echo "Xcode.app did not appear in /Applications." >&2
     exit 1
   fi
 }
 
 configure_xcode() {
   local dev="/Applications/Xcode.app/Contents/Developer"
+
   if [[ ! -d "$dev" ]]; then
-    echo "Xcode.app is not installed; skipping Xcode setup"
+    echo "Xcode.app is not installed; skipping Xcode setup."
     return 0
   fi
 
   if [[ ! -t 0 ]] && ! sudo -n true 2>/dev/null; then
-    echo "Xcode setup needs sudo. Re-run ./install-apps in a terminal." >&2
+    echo "Xcode setup needs sudo." >&2
+    echo "Re-run ./install-apps interactively." >&2
     exit 1
   fi
 
-  echo "Pointing xcode-select at Xcode. You may be asked for your password."
+  echo "Pointing xcode-select at Xcode..."
   sudo xcode-select -s "$dev"
-  echo "Accepting the Xcode license..."
+
+  echo "Accepting Xcode license..."
   sudo xcodebuild -license accept
+
   echo "Running Xcode first launch..."
   sudo xcodebuild -runFirstLaunch
 
@@ -165,7 +208,8 @@ configure_xcode() {
     echo "iOS simulator SDK already installed"
     return 0
   fi
-  echo "Downloading the iOS simulator platform..."
+
+  echo "Downloading iOS simulator platform..."
   xcodebuild -downloadPlatform iOS
 }
 
@@ -174,108 +218,111 @@ ensure_cursor_agent() {
     echo "Cursor agent CLI: $HOME/.local/bin/agent"
     return 0
   fi
-  echo "Cursor app does not install the agent CLI. Installing it..."
+
+  echo "Installing Cursor agent CLI..."
   curl -fsSL https://cursor.com/install | bash
+
   if [[ ! -x "$HOME/.local/bin/agent" ]]; then
-    echo "Cursor agent CLI install finished but ~/.local/bin/agent is missing" >&2
+    echo "Cursor agent CLI install finished but ~/.local/bin/agent is missing." >&2
     exit 1
   fi
+
   echo "Cursor agent CLI: $HOME/.local/bin/agent"
 }
 
-# Homebrew casks claude-code and codex provide the CLIs. Reinstall if the
-# command is missing after brew bundle (the desktop apps do not).
 ensure_brew_cli() {
   local cmd="$1"
   local cask="$2"
+
   hash -r 2>/dev/null || true
+
   if command -v "$cmd" >/dev/null 2>&1; then
     echo "$cmd: $(command -v "$cmd")"
     return 0
   fi
+
   echo "$cmd is not on PATH. Installing $cask..."
   brew install --cask "$cask"
+
   eval "$(brew shellenv)"
   hash -r 2>/dev/null || true
+
   if ! command -v "$cmd" >/dev/null 2>&1; then
-    echo "$cmd is still missing after installing $cask" >&2
+    echo "$cmd is still missing after installing $cask." >&2
     exit 1
   fi
-  echo "$cmd: $(command -v "$cmd")"
-}
 
-android_abi() {
-  case "$(uname -m)" in
-    arm64) printf '%s\n' arm64-v8a ;;
-    *) printf '%s\n' x86_64 ;;
-  esac
+  echo "$cmd: $(command -v "$cmd")"
 }
 
 ensure_gradle_java_home() {
   local java_home="$1"
   local props="$HOME/.gradle/gradle.properties"
+
   mkdir -p "$HOME/.gradle"
+
   if [[ -f "$props" ]] && grep -q '^java.home=' "$props"; then
     return 0
   fi
+
   printf 'java.home=%s\n' "$java_home" >>"$props"
 }
 
 ensure_android_sdk() {
   local sdk="$HOME/Library/Android/sdk"
-  local java_home abi bt image
+  local java_home
+
   java_home="$(/usr/libexec/java_home -v 17 2>/dev/null || true)"
+
   if [[ -z "$java_home" ]]; then
-    echo "JDK 17 not found. The zulu@17 cask should have installed it." >&2
+    echo "JDK 17 not found." >&2
+    echo "The zulu@17 cask should have installed it." >&2
     exit 1
   fi
+
   export JAVA_HOME="$java_home"
   export PATH="$JAVA_HOME/bin:$PATH"
-  if ! command -v sdkmanager >/dev/null 2>&1; then
-    echo "sdkmanager is missing. The android-commandlinetools cask should have installed it." >&2
+
+  if ! command -v android >/dev/null 2>&1; then
+    echo "Android CLI is missing." >&2
+    echo "The android-cli Homebrew cask should have installed it." >&2
     exit 1
   fi
 
   mkdir -p "$sdk"
-  echo "Accepting Android SDK licenses..."
-  set +o pipefail
-  yes | sdkmanager --sdk_root="$sdk" --licenses >/dev/null || true
-  set -o pipefail
-
-  abi="$(android_abi)"
-  bt="$(sdkmanager --sdk_root="$sdk" --list 2>/dev/null | awk '/build-tools;36\./ { print $1 }' | tail -1)"
-  if [[ -z "$bt" ]]; then
-    bt="build-tools;36.0.0"
-  fi
-  image="system-images;android-36;google_apis;${abi}"
-
-  echo "Installing Android SDK packages ($bt, $image)..."
-  sdkmanager --sdk_root="$sdk" --install \
-    "platform-tools" \
-    "emulator" \
-    "platforms;android-36" \
-    "sources;android-36" \
-    "$bt" \
-    "$image"
 
   export ANDROID_HOME="$sdk"
+  export ANDROID_SDK_ROOT="$sdk"
   export PATH="$sdk/emulator:$sdk/platform-tools:$PATH"
+
+  echo "Android CLI: $(command -v android)"
+  echo "Android SDK: $sdk"
+
+  echo "Installing Android SDK 36..."
+
+  android --sdk="$sdk" sdk install \
+    platform-tools \
+    emulator \
+    platforms/android-36 \
+    build-tools/36.0.0 \
+    sources/android-36
+
   ensure_gradle_java_home "$java_home"
 
-  if "$sdk/emulator/emulator" -list-avds 2>/dev/null | grep -qx expo_pixel; then
-    echo "Android emulator expo_pixel already exists"
+  echo "Checking Android emulators..."
+
+  if android --sdk="$sdk" emulator list 2>/dev/null | grep -q .; then
+    echo "Android emulator already exists"
+    android --sdk="$sdk" emulator list
     return 0
   fi
-  echo "Creating Android emulator expo_pixel..."
-  set +o pipefail
-  if ! echo no | avdmanager create avd --name expo_pixel --package "$image" --device pixel_6 --force; then
-    echo no | avdmanager create avd --name expo_pixel --package "$image" --force
-  fi
-  set -o pipefail
-  if ! "$sdk/emulator/emulator" -list-avds 2>/dev/null | grep -qx expo_pixel; then
-    echo "Failed to create the expo_pixel emulator" >&2
-    exit 1
-  fi
+
+  echo "Creating Android emulator..."
+
+  android --sdk="$sdk" emulator create medium_phone
+
+  echo "Android emulators:"
+  android --sdk="$sdk" emulator list
 }
 
 ensure_eas_cli() {
@@ -283,56 +330,56 @@ ensure_eas_cli() {
     echo "eas: $HOME/.local/bin/eas"
     return 0
   fi
+
   if command -v vp >/dev/null 2>&1; then
     echo "vp env default lts"
     vp env default lts || true
   fi
+
   if [[ -f "$HOME/.config/vite-plus/env" ]]; then
     # shellcheck disable=SC1091
     . "$HOME/.config/vite-plus/env"
   fi
+
   if ! command -v npm >/dev/null 2>&1; then
-    echo "npm is not on PATH, so eas-cli was not installed" >&2
+    echo "npm is not on PATH, so eas-cli was not installed." >&2
     exit 1
   fi
+
   echo "Installing eas-cli..."
   npm install --global eas-cli
+
   local eas_bin
   eas_bin="$(npm prefix -g)/bin/eas"
+
   if [[ ! -x "$eas_bin" ]]; then
-    echo "eas-cli install finished but $eas_bin is missing" >&2
+    echo "eas-cli install finished but $eas_bin is missing." >&2
     exit 1
   fi
+
   mkdir -p "$HOME/.local/bin"
   ln -sfn "$eas_bin" "$HOME/.local/bin/eas"
-  echo "eas: $HOME/.local/bin/eas"
-}
 
-install_mas_apps() {
-  local id name
-  while IFS=$'\t' read -r id name; do
-    [[ -z "$id" ]] && continue
-    if app_store_installed "$id"; then
-      echo "App Store: $name already installed"
-      continue
-    fi
-    echo "App Store: installing $name"
-    if ! mas install "$id"; then
-      echo "App Store: mas install did not complete; trying mas get"
-      mas get "$id"
-    fi
-  done < <(brewfile_mas_apps)
+  echo "eas: $HOME/.local/bin/eas"
 }
 
 main() {
   local mas_apps
+  local mas_skip
+
   echo "install-apps (root=$ROOT)"
+
   ensure_homebrew
 
+  #
+  # App Store
+  #
+
   mas_apps="$(brewfile_mas_apps)"
+
   if [[ -n "$mas_apps" ]]; then
     ensure_mas
-    wait_for_app_store_account
+    ensure_app_store_ready
     install_mas_apps
     wait_for_xcode
     configure_xcode
@@ -340,15 +387,38 @@ main() {
     echo "App Store: no mas apps in Brewfile"
   fi
 
+  #
+  # Homebrew
+  #
+
   echo "brew bundle..."
-  brew bundle --file="$BREWFILE"
+
+  # App Store apps have already been handled above.
+  # Prevent brew bundle from invoking mas again.
+  mas_skip="$(
+    brewfile_mas_apps |
+      cut -f2 |
+      paste -sd' ' -
+  )"
+
+  HOMEBREW_BUNDLE_MAS_SKIP="$mas_skip" \
+    brew bundle --file="$BREWFILE"
+
   eval "$(brew shellenv)"
+
+  #
+  # Developer tooling
+  #
 
   ensure_cursor_agent
   ensure_brew_cli claude claude-code
   ensure_brew_cli codex codex
+
   ensure_android_sdk
   ensure_eas_cli
+
+  echo
+  echo "install-apps complete"
 }
 
 main
