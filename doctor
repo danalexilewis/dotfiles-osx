@@ -1,68 +1,131 @@
 #!/usr/bin/env bash
-# Verify symlink install and flag common problems.
+# Verify chezmoi apply and flag common problems.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-LINKS_FILE="$ROOT/links.conf"
 OK=0
 WARN=0
 FAIL=0
-
-expand_home() {
-  # Escape ~ in ${var#…} so bash does not tilde-expand the pattern to $HOME.
-  case "$1" in
-    "~") printf '%s\n' "$HOME" ;;
-    "~/"*) printf '%s\n' "$HOME/${1#\~/}" ;;
-    *) printf '%s\n' "$1" ;;
-  esac
-}
 
 status_ok() { echo "  ok   $1"; OK=$((OK + 1)); }
 status_warn() { echo "  warn $1"; WARN=$((WARN + 1)); }
 status_fail() { echo "  fail $1"; FAIL=$((FAIL + 1)); }
 
-check_links() {
-  echo "Links"
-  while IFS= read -r line || [[ -n "$line" ]]; do
-    line="${line#"${line%%[![:space:]]*}"}"
-    line="${line%"${line##*[![:space:]]}"}"
-    [[ -z "$line" || "$line" == \#* ]] && continue
-    [[ "$line" != *" -> "* ]] && continue
-    local src_rel="${line%% -> *}"
-    local dest_spec="${line#* -> }"
-    src_rel="${src_rel%"${src_rel##*[![:space:]]}"}"
-    dest_spec="${dest_spec#"${dest_spec%%[![:space:]]*}"}"
-    local src="$ROOT/$src_rel"
-    local dest
-    dest="$(expand_home "$dest_spec")"
+config_path() {
+  printf '%s\n' "${XDG_CONFIG_HOME:-$HOME/.config}/chezmoi/chezmoi.toml"
+}
 
-    if [[ ! -e "$src" && ! -L "$src" ]]; then
-      status_fail "$src_rel (missing in repo)"
+chezmoi_cmd() {
+  chezmoi --source "$ROOT" "$@"
+}
+
+check_chezmoi() {
+  echo "Chezmoi"
+
+  if ! command -v chezmoi >/dev/null 2>&1; then
+    status_fail "chezmoi is not on PATH (run ./bootstrap)"
+    return 1
+  fi
+
+  status_ok "chezmoi $(chezmoi --version | awk '{gsub(/,/, "", $3); print $3; exit}')"
+
+  local config
+  config="$(config_path)"
+  if [[ ! -f "$config" ]]; then
+    status_fail "missing $config (run ./bootstrap or chezmoi init --source $ROOT)"
+    return 1
+  fi
+
+  status_ok "config $config"
+  return 0
+}
+
+print_profile() {
+  echo
+  echo "Profile"
+
+  if ! command -v python3 >/dev/null 2>&1; then
+    status_warn "python3 not found; skip profile dump"
+    chezmoi_cmd data --format=json || true
+    return 0
+  fi
+
+  if ! chezmoi_cmd data --format=json | python3 -c '
+import json, sys
+data = json.load(sys.stdin)
+profile = data.get("profile", "?")
+features = data.get("features") or {}
+print(f"  ok   profile={profile}")
+for key in ("mobile", "ai", "everyday", "pi", "cursorExtensions"):
+    if key in features:
+        print(f"  ok   features.{key}={str(features[key]).lower()}")
+    else:
+        print(f"  warn features.{key} missing")
+git = data.get("git") or {}
+if git.get("name") and git.get("email"):
+    print(f"  ok   git {git[\"name\"]} <{git[\"email\"]}>")
+else:
+    print("  warn git identity missing")
+'; then
+    status_fail "chezmoi data failed"
+  else
+    OK=$((OK + 1))
+  fi
+}
+
+check_status() {
+  echo
+  echo "Status"
+
+  local status
+  status="$(chezmoi_cmd status 2>&1 || true)"
+
+  if [[ -z "$status" ]]; then
+    status_ok "destination matches source"
+    return 0
+  fi
+
+  status_warn "destination differs from source"
+  echo "$status"
+
+  echo
+  echo "Drift hints"
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ -z "$line" ]] && continue
+    local rel="${line:3}"
+    local dest="$HOME/$rel"
+    local src=""
+    src="$(chezmoi_cmd source-path "$dest" 2>/dev/null || true)"
+    if [[ -z "$src" ]]; then
+      echo "  - $rel"
       continue
     fi
-    if [[ -L "$dest" ]]; then
-      local current
-      current="$(readlink "$dest")"
-      if [[ "$current" == "$src" ]]; then
-        status_ok "$dest"
-      else
-        status_fail "$dest -> $current (expected $src)"
-      fi
-    elif [[ -e "$dest" ]]; then
-      status_warn "$dest exists but is not a symlink (app may have replaced it)"
-      if command -v diff >/dev/null 2>&1; then
-        diff -u "$src" "$dest" | head -40 || true
-      fi
+    if [[ "$src" == *.tmpl ]]; then
+      echo "  - $rel  (template: chezmoi merge $(printf '%q' "$dest"))"
     else
-      status_fail "$dest (missing; run ./install)"
+      echo "  - $rel  (plain: chezmoi re-add $(printf '%q' "$dest"))"
     fi
-  done <"$LINKS_FILE"
+  done <<<"$status"
+}
+
+check_verify() {
+  echo
+  echo "Verify"
+
+  if chezmoi_cmd verify >/dev/null 2>&1; then
+    status_ok "chezmoi verify"
+    return 0
+  fi
+
+  status_fail "chezmoi verify (destination does not match; see Status)"
 }
 
 check_overrides() {
   echo
   echo "Override risks"
   if [[ -e "$HOME/.amethyst.yml" ]]; then
+    # Display path; tilde is not meant to expand.
+    # shellcheck disable=SC2088
     status_warn "~/.amethyst.yml exists and overrides ~/.config/amethyst/amethyst.yml"
   else
     status_ok "no ~/.amethyst.yml override"
@@ -84,7 +147,7 @@ check_secrets() {
   echo "Secret scan (tracked files)"
   local pattern='phx_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|Bearer [A-Za-z0-9._-]{20,}'
   local matches
-  matches=$(git -C "$ROOT" grep -nE "$pattern" -- . ':(exclude).githooks/*' ':(exclude)doctor' ':(exclude)install' 2>/dev/null || true)
+  matches=$(git -C "$ROOT" grep -nE "$pattern" -- . ':(exclude).githooks/*' ':(exclude)doctor' ':(exclude)bootstrap' 2>/dev/null || true)
   if [[ -n "$matches" ]]; then
     status_fail "possible secrets in tracked files:"
     echo "$matches"
@@ -120,7 +183,13 @@ PY
 
 main() {
   echo "dotfiles-osx doctor (root=$ROOT)"
-  check_links
+
+  if check_chezmoi; then
+    print_profile
+    check_status
+    check_verify
+  fi
+
   check_overrides
   check_secrets
   check_mcp

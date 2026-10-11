@@ -1,0 +1,15 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+# Point this repo at .githooks (secret-scan pre-commit).
+set -euo pipefail
+
+root={{ .chezmoi.workingTree | quote }}
+
+if [[ ! -d "$root/.git" ]]; then
+  echo "hooks: $root is not a git checkout; skip" >&2
+  exit 0
+fi
+
+echo "hooks: core.hooksPath=.githooks"
+git -C "$root" config core.hooksPath .githooks
+{{- end -}}

@@ -1,6 +1,6 @@
 [user]
-	name = Daniel Lewis
-	email = dan.lewis@enspiral.com
+	name = {{ .git.name }}
+	email = {{ .git.email }}
 [filter "lfs"]
 	required = true
 	clean = git-lfs clean -- %f

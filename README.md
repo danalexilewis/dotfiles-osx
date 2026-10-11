@@ -1,7 +1,9 @@
 # dotfiles-osx
 
-Curated macOS config + Homebrew apps for a fresh AI/dev machine.
+Curated macOS config + Homebrew apps for a fresh AI/dev machine, managed by [chezmoi](https://www.chezmoi.io/).
 Runtime state (caches, OAuth tokens, conversation DBs) stays out of Git.
+
+macOS only for now.
 
 ## One-shot bootstrap (new Mac)
 
@@ -14,27 +16,65 @@ git clone git@github.com:danalexilewis/dotfiles-osx.git ~/repos/dotfiles-osx
 ~/repos/dotfiles-osx/bootstrap
 ```
 
-That runs, in order:
+That installs Homebrew if needed, `brew install chezmoi`, then runs
+`chezmoi init --apply --source ~/repos/dotfiles-osx`.
 
-1. [`./install-apps`](install-apps) — Homebrew, App Store (including Xcode), `brew bundle`, CLIs, Expo toolchain
-2. oh-my-zsh (if missing)
-3. `./install` (symlinks + Cursor extensions)
-4. `vp env default lts`
-5. `./doctor`
+`chezmoi init` asks for a **machine profile** (only `full` today) and then each
+feature toggle, using the profile's values as the defaults. Answers are stored
+in `~/.config/chezmoi/chezmoi.toml`. The source directory stays this checkout.
 
 Skip Cursor extensions with `./bootstrap --no-extensions`.
 
 ### Still manual once per machine
 
-- `./install-apps` asks for your password while setting up Xcode
+- App Store / Xcode setup asks for your password
 - Sign in to 1Password, then `gh auth login`
 - `eas login`, when you first use EAS Build
 - Activate Lunar Pro in the Lunar app
 - Sign in to Cursor / Claude / Codex / T3
 - OAuth for Figma / Linear / PostHog when first used
 - Host-only secrets in `~/.zshrc.local`
-- SSH key for GitHub if you clone via SSH before 1Password/gh is ready  
+- SSH key for GitHub if you clone via SSH before 1Password/gh is ready
   (HTTPS clone works too: `git clone https://github.com/danalexilewis/dotfiles-osx.git`)
+- Apps already installed by hand (for example Spark Desktop) may need
+  `brew install --cask --adopt readdle-spark` before `brew bundle` will claim them
+
+## Everyday commands
+
+| Command | What it does |
+| ------- | ------------ |
+| `chezmoi diff` | Show what would change in `$HOME` |
+| `chezmoi apply` | Make `$HOME` match this repo |
+| `chezmoi status` | List drifted files |
+| `chezmoi re-add PATH` | Pull a **plain** file's live edits back into the repo |
+| `chezmoi merge PATH` | Three-way merge a **template** (git identity, Codex config) |
+| `chezmoi update` | `git pull` in the source repo, then apply |
+| `chezmoi init --prompt` | Re-ask profile / toggles / git identity |
+| `./doctor` | Verify apply, overrides, secrets, global MCPs |
+
+chezmoi uses **copy mode**. Edits made through an app UI show up as drift.
+Plain files come back with `re-add`; templates need `merge`.
+
+## Profiles and toggles
+
+Profiles live in [`home/.chezmoi.toml.tmpl`](home/.chezmoi.toml.tmpl). To add a
+profile later, add one dict entry there. Toggles can still override the
+profile on each machine.
+
+| Toggle | `full` default | What it controls |
+| ------ | -------------- | ---------------- |
+| `features.mobile` | on | Watchman, CocoaPods, Zulu 17, Android Studio, `android-cli`, Xcode, Android SDK 36, emulator, `eas-cli` |
+| `features.ai` | on | T3 Code, Claude, `claude-code`, `codex`, Cursor `agent` CLI, `~/.codex`, `~/.t3` |
+| `features.everyday` | on | Zen, Obsidian, AFFiNE, Figma, Linear, Discord, CleanShot, Loom, Screen Studio, Zoom, Whisper, **Spark**, 1Blocker |
+| `features.pi` | off | `~/.pi/agent/settings.json` |
+| `features.cursorExtensions` | on | Cursor extensions from package data |
+
+**core** is always on: `gh`, `git-lfs`, `vite-plus`, `postgresql@16`, `ncdu`,
+`mole`, `mas`, `chezmoi`, 1Password + CLI, Cursor, Ghostty, Amethyst, Lunar,
+shell / git / Cursor / Ghostty / Amethyst / Vite+ config, and oh-my-zsh.
+
+Change a toggle later with `chezmoi init --prompt`, or edit
+`~/.config/chezmoi/chezmoi.toml` and run `chezmoi apply`.
 
 ## Design rules
 
@@ -42,42 +82,55 @@ Skip Cursor extensions with `./bootstrap --no-extensions`.
 - **No project-specific MCP may be installed globally.** Global MCPs stay rare (Chrome DevTools, Figma, agentmemory). Everything else lives in the project’s `.cursor/mcp.json`.
 - **Never commit secrets.** Use `${env:NAME}` in MCP configs. Per-machine values go in `~/.zshrc.local` and `~/.gitconfig`.
 
-## Brewfile (apps)
+## Packages
 
-Installed by `./install-apps` (App Store apps first, then `brew bundle`):
+Declared in [`home/.chezmoidata/packages.yaml`](home/.chezmoidata/packages.yaml)
+and installed by chezmoi scripts (`brew bundle` plus App Store / Xcode / CLIs).
 
 | Kind      | Packages                                                                                                   |
 | --------- | ---------------------------------------------------------------------------------------------------------- |
-| CLI       | `gh`, `git-lfs`, `vite-plus`, `postgresql@16`, `ncdu`, `mole`, `mas`, Watchman, CocoaPods                   |
+| CLI       | `gh`, `git-lfs`, `vite-plus`, `postgresql@16`, `ncdu`, `mole`, `mas`, `chezmoi`, Watchman, CocoaPods       |
 | Core      | Cursor, Ghostty, Amethyst, Lunar, T3 Code, Claude, Claude Code (`claude`), Codex (`codex`), 1Password + CLI |
-| Everyday  | Zen, Obsidian, AFFiNE, Figma, Linear, Discord, CleanShot, Loom, Screen Studio, Zoom, Whisper Transcription |
+| Everyday  | Zen, Obsidian, AFFiNE, Figma, Linear, Discord, CleanShot, Loom, Screen Studio, Zoom, Whisper Transcription, Spark |
 | App Store | 1Blocker, Xcode                                                                                            |
-| Expo      | Zulu JDK 17, Android Studio, Android command-line tools, Android SDK 36, `eas`                             |
+| Expo      | Zulu JDK 17, Android Studio, Android CLI, Android SDK 36, `eas`                                            |
 
-`./install-apps` signs in to the App Store and installs those apps before `brew bundle`. After that it points `xcode-select` at Xcode, accepts the license, and downloads the iOS simulator platform. The Cursor app cask does not install the agent CLI, so the script installs `agent` when `~/.local/bin/agent` is missing. `claude` and `codex` come from the `claude-code` and `codex` casks; the script installs either cask again if that command is not on `PATH`.
+The Cursor app cask does not install the agent CLI, so a script installs
+`agent` when `~/.local/bin/agent` is missing. `claude` and `codex` come from
+the `claude-code` and `codex` casks; the script installs either cask again if
+that command is not on `PATH`.
 
 Intentionally **not** included: Docker, Warp, tmux, worktrunk, Go, pgAdmin, Flameshot, PostgreSQL 14, Raycast, Signal.
 
 ## Layout
 
-| Path                     | Linked to                                       |
-| ------------------------ | ----------------------------------------------- |
-| `zsh/zshrc`              | `~/.zshrc`                                      |
-| `zsh/zshenv`             | `~/.zshenv`                                     |
-| `bash/bashrc`            | `~/.bashrc`                                     |
-| `git/config`             | `~/.config/git/config`                          |
-| `git/ignore`             | `~/.config/git/ignore`                          |
-| `cursor/*`               | Cursor User dir + `~/.cursor/mcp.json` + skills |
-| `t3/*`                   | `~/.t3/userdata/`                               |
-| `codex/config.toml`      | `~/.codex/config.toml`                          |
-| `vite-plus/config.json`  | `~/.config/vite-plus/config.json`               |
-| `ghostty/config.ghostty` | `~/.config/ghostty/config.ghostty`              |
-| `amethyst/amethyst.yml`  | `~/.config/amethyst/amethyst.yml`               |
+Source lives under [`home/`](home/) (see [`.chezmoiroot`](.chezmoiroot)).
+chezmoi copies these into `$HOME`.
 
-`links.conf` is the source of truth. `./install` backs up existing targets under `~/.dotfiles-backup/<timestamp>/` then symlinks. Re-run after `git pull`.
+| Source | Target |
+| ------ | ------ |
+| `home/dot_zshrc` | `~/.zshrc` |
+| `home/dot_zshenv` | `~/.zshenv` |
+| `home/dot_bashrc` | `~/.bashrc` |
+| `home/create_dot_gitconfig` | `~/.gitconfig` (created only if missing) |
+| `home/dot_config/git/config.tmpl` | `~/.config/git/config` |
+| `home/dot_config/git/ignore` | `~/.config/git/ignore` |
+| `home/Library/Application Support/Cursor/User/*` | Cursor User dir |
+| `home/dot_cursor/mcp.json` | `~/.cursor/mcp.json` |
+| `home/dot_cursor/skills/` | `~/.cursor/skills/` (only files listed here; extra skills are kept) |
+| `home/dot_t3/userdata/*` | `~/.t3/userdata/` |
+| `home/dot_codex/private_config.toml.tmpl` | `~/.codex/config.toml` |
+| `home/dot_config/vite-plus/config.json` | `~/.config/vite-plus/config.json` |
+| `home/dot_config/ghostty/config.ghostty` | `~/.config/ghostty/config.ghostty` |
+| `home/dot_config/amethyst/amethyst.yml` | `~/.config/amethyst/amethyst.yml` |
+| `home/dot_pi/agent/settings.json` | `~/.pi/agent/settings.json` (when `features.pi` is on) |
+
+oh-my-zsh is a `git-repo` external (`~/.oh-my-zsh`, refreshed weekly). That
+stays compatible with omz's own git-based updater.
 
 ## Per-machine (not in Git)
 
+- `~/.config/chezmoi/chezmoi.toml` — profile, toggles, git identity, `sourceDir`
 - `~/.gitconfig` — CodeRabbit `machineId` and anything from `git config --global`
 - `~/.zshrc.local` — host-specific env / secrets for the shell
 - Lunar Pro license (activate in the Lunar app; up to 5 Macs)
@@ -85,11 +138,12 @@ Intentionally **not** included: Docker, Warp, tmux, worktrunk, Go, pgAdmin, Flam
 
 ## Node / package managers
 
-Vite+ (`vp env`) manages Node and package-manager shims. Project pins use `.node-version`, `devEngines`, `engines.node`, or `.nvmrc`. Bootstrap sets `vp env default lts`.
+Vite+ (`vp env`) manages Node and package-manager shims. Project pins use `.node-version`, `devEngines`, `engines.node`, or `.nvmrc`. Apply sets `vp env default lts`.
 
 ## Pi
 
-When you start using pi, copy `pi/settings.json.example` to `pi/settings.json`, uncomment the line in `links.conf`, and re-run `./install`. Never commit `auth.json`, sessions, or trust state.
+Turn on `features.pi` (init prompt or chezmoi.toml) and `chezmoi apply`.
+Never commit `auth.json`, sessions, or trust state.
 
 ## Eddy project MCPs
 
@@ -100,8 +154,7 @@ Project-specific servers belong in the Eddy repos:
 
 ## Scripts
 
-- `./bootstrap` — one-shot new machine (apps + omz + install + vp default + doctor)
-- `./install-apps` — App Store apps, Xcode, `brew bundle`, Cursor agent / Claude Code / Codex CLIs, Expo toolchain
-- `./install` — symlink everything (`--dry-run`, `--extensions`)
-- `./doctor` — check links, overrides, secret patterns, list global MCPs
-- `.githooks/pre-commit` — blocks obvious token strings (enabled via `core.hooksPath` on install)
+- `./bootstrap` — Homebrew + chezmoi + `chezmoi init --apply`
+- `chezmoi apply` — packages, App Store / Xcode, files, CLIs, extensions
+- `./doctor` — chezmoi status/verify, overrides, secret scan, global MCPs
+- `.githooks/pre-commit` — blocks obvious token strings (enabled via `core.hooksPath` on apply)

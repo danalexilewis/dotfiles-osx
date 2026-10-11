@@ -1,0 +1,154 @@
+{{- if eq .chezmoi.os "darwin" -}}
+{{- $mas := list -}}
+{{- if .features.everyday -}}
+{{- range .packages.darwin.everyday.mas -}}
+{{- $mas = append $mas . -}}
+{{- end -}}
+{{- end -}}
+{{- if .features.mobile -}}
+{{- range .packages.darwin.mobile.mas -}}
+{{- $mas = append $mas . -}}
+{{- end -}}
+{{- end -}}
+{{- if $mas -}}
+#!/usr/bin/env bash
+# Install Mac App Store apps, then configure Xcode when it is in the list.
+set -euo pipefail
+{{ template "brew-env.sh" . }}
+
+if ! command -v brew >/dev/null 2>&1; then
+  echo "Homebrew is required before App Store apps can be installed." >&2
+  exit 1
+fi
+
+ensure_mas() {
+  if command -v mas >/dev/null 2>&1; then
+    return 0
+  fi
+
+  echo "Installing mas..."
+  brew install mas
+}
+
+ensure_app_store_ready() {
+  # Modern mas no longer has a reliable `mas account` check.
+  # If mas itself can talk to the App Store, continue.
+  if mas list >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if [[ ! -t 0 ]]; then
+    echo "App Store authentication may be required." >&2
+    echo "Run chezmoi apply interactively from Terminal." >&2
+    exit 1
+  fi
+
+  echo "App Store authentication may be required."
+  echo "Opening the App Store..."
+  open -a "App Store"
+
+  echo
+  echo "Sign into the App Store if needed, then press Enter to continue."
+  read -r
+}
+
+app_store_installed() {
+  local id="$1"
+
+  mas list 2>/dev/null |
+    awk '{print $1}' |
+    grep -qx "$id"
+}
+
+install_mas_apps() {
+  local id name
+
+  while IFS=$'\t' read -r id name; do
+    [[ -z "$id" ]] && continue
+
+    if app_store_installed "$id"; then
+      echo "App Store: $name already installed"
+      continue
+    fi
+
+    echo "App Store: installing $name"
+
+    if ! mas get "$id"; then
+      echo "App Store: mas get failed; trying mas install"
+
+      if ! mas install "$id"; then
+        echo "App Store: failed to install $name" >&2
+        exit 1
+      fi
+    fi
+  done <<'MAS_APPS'
+{{- range $mas }}
+{{ .id }}	{{ .name }}
+{{- end }}
+MAS_APPS
+}
+
+wait_for_xcode() {
+  local dev="/Applications/Xcode.app/Contents/Developer"
+  local attempt=0
+
+  while [[ ! -d "$dev" && "$attempt" -lt 120 ]]; do
+    if [[ "$attempt" -eq 0 ]]; then
+      echo "Waiting for Xcode.app to finish installing..."
+    fi
+
+    sleep 5
+    attempt=$((attempt + 1))
+  done
+
+  if [[ ! -d "$dev" ]]; then
+    echo "Xcode.app did not appear in /Applications." >&2
+    exit 1
+  fi
+}
+
+configure_xcode() {
+  local dev="/Applications/Xcode.app/Contents/Developer"
+
+  if [[ ! -d "$dev" ]]; then
+    echo "Xcode.app is not installed; skipping Xcode setup."
+    return 0
+  fi
+
+  if [[ ! -t 0 ]] && ! sudo -n true 2>/dev/null; then
+    echo "Xcode setup needs sudo." >&2
+    echo "Re-run chezmoi apply interactively." >&2
+    exit 1
+  fi
+
+  echo "Pointing xcode-select at Xcode..."
+  sudo xcode-select -s "$dev"
+
+  echo "Accepting Xcode license..."
+  sudo xcodebuild -license accept
+
+  echo "Running Xcode first launch..."
+  sudo xcodebuild -runFirstLaunch
+
+  if xcodebuild -showsdks 2>/dev/null | grep -q iphonesimulator; then
+    echo "iOS simulator SDK already installed"
+    return 0
+  fi
+
+  echo "Downloading iOS simulator platform..."
+  xcodebuild -downloadPlatform iOS
+}
+
+echo "App Store apps"
+ensure_mas
+ensure_app_store_ready
+install_mas_apps
+{{- range $mas }}
+{{- if eq (printf "%v" .id) "497799835" }}
+
+wait_for_xcode
+configure_xcode
+{{- end }}
+{{- end }}
+{{- end -}}
+{{- end -}}

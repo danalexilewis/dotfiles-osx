@@ -3,13 +3,13 @@ tool_output_token_limit = 25000
 personality = "pragmatic"
 model_reasoning_effort = "xhigh"
 
-[projects."/Users/dan/repos/eddy/app"]
+[projects."{{ .chezmoi.homeDir }}/repos/eddy/app"]
 trust_level = "trusted"
 
-[projects."/Users/dan/repos/eddy/project-workbench"]
+[projects."{{ .chezmoi.homeDir }}/repos/eddy/project-workbench"]
 trust_level = "trusted"
 
-[projects."/Users/dan/gt"]
+[projects."{{ .chezmoi.homeDir }}/gt"]
 trust_level = "trusted"
 
 [notice]

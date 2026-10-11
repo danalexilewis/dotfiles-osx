@@ -1,0 +1,14 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+# Set the Vite+ default Node version to LTS.
+set -euo pipefail
+{{ template "brew-env.sh" . }}
+
+if command -v vp >/dev/null 2>&1; then
+  echo "vp env default lts"
+  vp env default lts || true
+  exit 0
+fi
+
+echo "warn: vp not on PATH yet; open a new shell and run: vp env default lts" >&2
+{{- end -}}

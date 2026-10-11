@@ -1,0 +1,51 @@
+{{- if eq .chezmoi.os "darwin" -}}
+{{- $groups := list "core" -}}
+{{- if .features.mobile -}}
+{{- $groups = append $groups "mobile" -}}
+{{- end -}}
+{{- if .features.ai -}}
+{{- $groups = append $groups "ai" -}}
+{{- end -}}
+{{- if .features.everyday -}}
+{{- $groups = append $groups "everyday" -}}
+{{- end -}}
+{{- $masNames := list -}}
+{{- range $groups -}}
+{{- $group := index $.packages.darwin . -}}
+{{- range $group.mas -}}
+{{- $masNames = append $masNames .name -}}
+{{- end -}}
+{{- end -}}
+#!/usr/bin/env bash
+# Install Homebrew packages for the enabled feature groups.
+set -euo pipefail
+{{ template "brew-env.sh" . }}
+
+if ! command -v brew >/dev/null 2>&1; then
+  echo "Homebrew is required before brew bundle can run." >&2
+  exit 1
+fi
+
+echo "brew bundle..."
+
+HOMEBREW_BUNDLE_MAS_SKIP={{ $masNames | join " " | quote }} \
+  brew bundle --file=/dev/stdin <<'BREWFILE'
+{{- range $groups }}
+{{- $group := index $.packages.darwin . }}
+
+# {{ . }}
+{{- range $group.brews }}
+brew {{ . | quote }}
+{{- end }}
+{{- range $group.casks }}
+cask {{ . | quote }}
+{{- end }}
+{{- range $group.mas }}
+mas {{ .name | quote }}, id: {{ .id }}
+{{- end }}
+{{- end }}
+BREWFILE
+
+eval "$(brew shellenv)"
+echo "brew bundle complete"
+{{- end -}}

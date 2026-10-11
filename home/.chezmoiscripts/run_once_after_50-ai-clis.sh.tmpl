@@ -1,0 +1,57 @@
+{{- if and (eq .chezmoi.os "darwin") .features.ai -}}
+#!/usr/bin/env bash
+# Cursor agent CLI plus Claude and Codex CLIs (desktop apps do not install these).
+set -euo pipefail
+{{ template "brew-env.sh" . }}
+
+ensure_cursor_agent() {
+  if [[ -x "$HOME/.local/bin/agent" ]]; then
+    echo "Cursor agent CLI: $HOME/.local/bin/agent"
+    return 0
+  fi
+
+  echo "Installing Cursor agent CLI..."
+  curl -fsSL https://cursor.com/install | bash
+
+  if [[ ! -x "$HOME/.local/bin/agent" ]]; then
+    echo "Cursor agent CLI install finished but ~/.local/bin/agent is missing." >&2
+    exit 1
+  fi
+
+  echo "Cursor agent CLI: $HOME/.local/bin/agent"
+}
+
+ensure_brew_cli() {
+  local cmd="$1"
+  local cask="$2"
+
+  hash -r 2>/dev/null || true
+
+  if command -v "$cmd" >/dev/null 2>&1; then
+    echo "$cmd: $(command -v "$cmd")"
+    return 0
+  fi
+
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "Homebrew is required to install $cask." >&2
+    exit 1
+  fi
+
+  echo "$cmd is not on PATH. Installing $cask..."
+  brew install --cask "$cask"
+
+  eval "$(brew shellenv)"
+  hash -r 2>/dev/null || true
+
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "$cmd is still missing after installing $cask." >&2
+    exit 1
+  fi
+
+  echo "$cmd: $(command -v "$cmd")"
+}
+
+ensure_cursor_agent
+ensure_brew_cli claude claude-code
+ensure_brew_cli codex codex
+{{- end -}}

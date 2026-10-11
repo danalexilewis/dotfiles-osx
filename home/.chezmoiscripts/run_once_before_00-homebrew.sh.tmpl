@@ -1,0 +1,37 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+# Install Homebrew if it is missing.
+set -euo pipefail
+
+if command -v brew >/dev/null 2>&1; then
+  eval "$(brew shellenv)"
+  echo "Homebrew: $(command -v brew)"
+  exit 0
+fi
+
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+  echo "Homebrew: $(command -v brew)"
+  exit 0
+fi
+
+if [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+  echo "Homebrew: $(command -v brew)"
+  exit 0
+fi
+
+echo "Installing Homebrew..."
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+else
+  echo "Homebrew install finished but brew was not found." >&2
+  exit 1
+fi
+
+echo "Homebrew: $(command -v brew)"
+{{- end -}}

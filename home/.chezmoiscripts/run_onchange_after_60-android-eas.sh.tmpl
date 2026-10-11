@@ -1,0 +1,117 @@
+{{- if and (eq .chezmoi.os "darwin") .features.mobile -}}
+#!/usr/bin/env bash
+# Android SDK 36, an emulator, and eas-cli for Expo.
+set -euo pipefail
+{{ template "brew-env.sh" . }}
+
+ensure_gradle_java_home() {
+  local java_home="$1"
+  local props="$HOME/.gradle/gradle.properties"
+
+  mkdir -p "$HOME/.gradle"
+
+  if [[ -f "$props" ]] && grep -q '^java.home=' "$props"; then
+    return 0
+  fi
+
+  printf 'java.home=%s\n' "$java_home" >>"$props"
+}
+
+ensure_android_sdk() {
+  local sdk="$HOME/Library/Android/sdk"
+  local java_home
+
+  java_home="$(/usr/libexec/java_home -v 17 2>/dev/null || true)"
+
+  if [[ -z "$java_home" ]]; then
+    echo "JDK 17 not found." >&2
+    echo "The zulu@17 cask should have installed it." >&2
+    exit 1
+  fi
+
+  export JAVA_HOME="$java_home"
+  export PATH="$JAVA_HOME/bin:$PATH"
+
+  if ! command -v android >/dev/null 2>&1; then
+    echo "Android CLI is missing." >&2
+    echo "The android-cli Homebrew cask should have installed it." >&2
+    exit 1
+  fi
+
+  mkdir -p "$sdk"
+
+  export ANDROID_HOME="$sdk"
+  export ANDROID_SDK_ROOT="$sdk"
+  export PATH="$sdk/emulator:$sdk/platform-tools:$PATH"
+
+  echo "Android CLI: $(command -v android)"
+  echo "Android SDK: $sdk"
+
+  echo "Installing Android SDK 36..."
+
+  android --sdk="$sdk" sdk install \
+    platform-tools \
+    emulator \
+    platforms/android-36 \
+    build-tools/36.0.0 \
+    sources/android-36
+
+  ensure_gradle_java_home "$java_home"
+
+  echo "Checking Android emulators..."
+
+  if android --sdk="$sdk" emulator list 2>/dev/null | grep -q .; then
+    echo "Android emulator already exists"
+    android --sdk="$sdk" emulator list
+    return 0
+  fi
+
+  echo "Creating Android emulator..."
+
+  android --sdk="$sdk" emulator create medium_phone
+
+  echo "Android emulators:"
+  android --sdk="$sdk" emulator list
+}
+
+ensure_eas_cli() {
+  if [[ -x "$HOME/.local/bin/eas" ]]; then
+    echo "eas: $HOME/.local/bin/eas"
+    return 0
+  fi
+
+  if command -v vp >/dev/null 2>&1; then
+    echo "vp env default lts"
+    vp env default lts || true
+  fi
+
+  if [[ -f "$HOME/.config/vite-plus/env" ]]; then
+    # shellcheck disable=SC1091
+    . "$HOME/.config/vite-plus/env"
+  fi
+
+  if ! command -v npm >/dev/null 2>&1; then
+    echo "npm is not on PATH, so eas-cli was not installed." >&2
+    exit 1
+  fi
+
+  echo "Installing eas-cli..."
+  npm install --global eas-cli
+
+  local eas_bin
+  eas_bin="$(npm prefix -g)/bin/eas"
+
+  if [[ ! -x "$eas_bin" ]]; then
+    echo "eas-cli install finished but $eas_bin is missing." >&2
+    exit 1
+  fi
+
+  mkdir -p "$HOME/.local/bin"
+  ln -sfn "$eas_bin" "$HOME/.local/bin/eas"
+
+  echo "eas: $HOME/.local/bin/eas"
+}
+
+ensure_android_sdk
+ensure_eas_cli
+{{- end -}}

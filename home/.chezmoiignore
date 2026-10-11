@@ -1,0 +1,10 @@
+{{- if ne .chezmoi.os "darwin" }}
+Library
+{{- end }}
+{{- if not .features.ai }}
+.codex
+.t3
+{{- end }}
+{{- if not .features.pi }}
+.pi
+{{- end }}

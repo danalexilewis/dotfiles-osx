@@ -1,0 +1,90 @@
+# Homebrew / App Store packages and Cursor extensions, grouped by feature.
+# Scripts in .chezmoiscripts render the enabled groups.
+
+packages:
+  darwin:
+    core:
+      brews:
+        - gh
+        - git-lfs
+        - vite-plus
+        - postgresql@16
+        - ncdu
+        - mole
+        - mas
+        - chezmoi
+      casks:
+        - 1password
+        - 1password-cli
+        - cursor
+        - ghostty
+        - amethyst
+        - lunar
+      mas: []
+    mobile:
+      brews:
+        - watchman
+        - cocoapods
+      casks:
+        - zulu@17
+        - android-studio
+        - android-cli
+      mas:
+        - name: Xcode
+          id: 497799835
+    ai:
+      brews: []
+      casks:
+        - t3-code
+        - claude
+        - claude-code
+        - codex
+      mas: []
+    everyday:
+      brews: []
+      casks:
+        - zen
+        - obsidian
+        - affine
+        - figma
+        - linear
+        - discord
+        - cleanshot
+        - loom
+        - screen-studio
+        - zoom
+        - macwhisper
+        - readdle-spark
+      mas:
+        - name: 1Blocker
+          id: 1365531024
+
+cursor:
+  extensions:
+    - aaron-bond.better-comments
+    - anysphere.remote-ssh
+    - bradlc.vscode-tailwindcss
+    - chakra-ui.panda-css-vscode
+    - christian-kohler.path-intellisense
+    - coderabbit.coderabbit-vscode
+    - davidanson.vscode-markdownlint
+    - dbaeumer.vscode-eslint
+    - eamodio.gitlens
+    - editorconfig.editorconfig
+    - esbenp.prettier-vscode
+    - esdete.tailwind-rainbow
+    - firsttris.vscode-jest-runner
+    - gruntfuggly.todo-tree
+    - irongeek.vscode-env
+    - jcbuisson.vue
+    - jumail.headwind
+    - ms-playwright.playwright
+    - openai.chatgpt
+    - pinegrow.piny
+    - robole.marky-stats
+    - rvest.vs-code-prettier-eslint
+    - svelte.svelte-vscode
+    - timitejumola.chakra-ui-doc
+    - tumido.cron-explained
+    - vscodevim.vim
+    - yoavbls.pretty-ts-errors

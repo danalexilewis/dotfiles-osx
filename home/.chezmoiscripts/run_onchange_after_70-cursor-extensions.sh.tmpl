@@ -1,0 +1,21 @@
+{{- if and (eq .chezmoi.os "darwin") .features.cursorExtensions -}}
+#!/usr/bin/env bash
+# Install Cursor extensions from .chezmoidata/packages.yaml.
+set -euo pipefail
+{{ template "brew-env.sh" . }}
+
+if ! command -v cursor >/dev/null 2>&1; then
+  echo "extensions: cursor CLI not found; skip" >&2
+  exit 0
+fi
+
+while IFS= read -r ext || [[ -n "$ext" ]]; do
+  [[ -z "$ext" || "$ext" == \#* ]] && continue
+  echo "extension: $ext"
+  cursor --install-extension "$ext" || true
+done <<'EXTENSIONS'
+{{- range .cursor.extensions }}
+{{ . }}
+{{- end }}
+EXTENSIONS
+{{- end -}}
