@@ -5,8 +5,7 @@
 layouts:
   - tall
   - middle-wide
-  - wide
-  - 3column-left
+  - row
 
 mod3:
   - control
@@ -38,4 +37,4 @@ swap-cw:
 
 mouse-swaps-windows: true
 mouse-resizes-windows: true
-new-windows-to-main: true
+new-windows-to-main: false

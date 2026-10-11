@@ -56,7 +56,7 @@ data = json.load(sys.stdin)
 profile = data.get("profile", "?")
 features = data.get("features") or {}
 print(f"  ok   profile={profile}")
-for key in ("mobile", "ai", "everyday", "pi", "cursorExtensions"):
+for key in ("mobile", "ai", "everyday", "pi", "cursorExtensions", "localAi"):
     if key in features:
         print(f"  ok   features.{key}={str(features[key]).lower()}")
     else:

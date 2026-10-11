@@ -1,0 +1,593 @@
+{
+	"[dart]": {
+		"editor.formatOnSave": true,
+		"editor.formatOnType": true,
+		"editor.rulers": [
+			80
+		],
+		"editor.selectionHighlight": false,
+		"editor.suggest.snippetsPreventQuickSuggestions": false,
+		"editor.suggestSelection": "first",
+		"editor.tabCompletion": "onlySnippets",
+		"editor.wordBasedSuggestions": "off"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "vscode.json-language-features",
+		"editor.quickSuggestions": {
+			"strings": true
+		},
+		"editor.suggest.insertMode": "replace",
+		"gitlens.codeLens.scopes": [
+			"document"
+		]
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"codesnippetsai.defaultModel": "Google PaLM2",
+	"codestream.email": "dan.lewis@bamboocreative.nz",
+	"compile-hero.disable-compile-files-on-did-save-code": true,
+	"editor.accessibilitySupport": "off",
+	"editor.bracketPairColorization.enabled": true,
+	"editor.defaultFormatter": "dbaeumer.vscode-eslint",
+	"editor.inlineSuggest.enabled": true,
+	"editor.linkedEditing": true,
+	"editor.renderWhitespace": "all",
+	"editor.stickyScroll.enabled": true,
+	"editor.stickyTabStops": true,
+	"editor.suggest.showStatusBar": true,
+	"editor.tabSize": 2,
+	"editor.wordWrap": "on",
+	"explorer.confirmDelete": false,
+	"explorer.confirmDragAndDrop": false,
+	"explorer.incrementalNaming": "smart",
+	"files.autoSave": "onFocusChange",
+	"git.confirmSync": false,
+	"git.enableCommitSigning": true,
+	"git.enableSmartCommit": true,
+	"git.ignoreRebaseWarning": true,
+	"git.openRepositoryInParentFolders": "always",
+	"javascript.updateImportsOnFileMove.enabled": "always",
+	"liquid.format": true,
+	"prettier.jsxSingleQuote": true,
+	"prettier.singleQuote": true,
+	"prettier.trailingComma": "none",
+	"prettier.useTabs": true,
+	"redhat.telemetry.enabled": false,
+	"security.workspace.trust.untrustedFiles": "open",
+	"settingsSync.ignoredExtensions": [
+		"ms-vscode.test-adapter-converter"
+	],
+	"tabnine.debounceMilliseconds": 250,
+	"tabnine.experimentalAutoImports": true,
+	"tabnine.receiveBetaChannelUpdates": true,
+	"terminal.integrated.env.osx": {
+		"FIG_NEW_SESSION": "1"
+	},
+	"timeline.pageOnScroll": true,
+	"todo-tree.general.tags": [
+		"BUG",
+		"HACK",
+		"FIXME",
+		"TODO",
+		"XXX",
+		"[ ]",
+		"[x]",
+		"INFO"
+	],
+	"todo-tree.regex.regex": "(//|#|<!--|;|/\\*|^|^\\s*(-|\\d+.))\\s*($TAGS)",
+	"todo-tree.tree.showScanModeButton": false,
+	"totalTypeScript.hiddenTips": [
+		"basic-types",
+		"passing-generics-to-types",
+		"typeof",
+		"any-type",
+		"union-type",
+		"ts-object-type",
+		"type-alias-declaration",
+		"undefined-keyword",
+		"record-utility-type",
+		"interface-with-generics",
+		"generic-slots-in-functions",
+		"in-operator-narrowing",
+		"interface-with-multiple-generics",
+		"keyof",
+		"returntype-utility-type",
+		"type-alias-with-generics",
+		"omit-utility-type",
+		"pick-utility-type",
+		"tuple-type",
+		"bigint",
+		"type-predicate"
+	],
+	"totalTypeScript.hideAllTips": false,
+	"totalTypeScript.hideBasicTips": true,
+	"typescript.format.semicolons": "remove",
+	"typescript.inlayHints.enumMemberValues.enabled": true,
+	"typescript.updateImportsOnFileMove.enabled": "never",
+	"vim.commandLineModeKeyBindings": [],
+	"vim.commandLineModeKeyBindingsNonRecursive": [],
+	"vim.easymotion": true,
+	"vim.handleKeys": {
+		"<C-a>": false,
+		"<C-f>": false,
+		"<C-r>": false
+	},
+	"vim.hlsearch": true,
+	"vim.incsearch": true,
+	"vim.insertModeKeyBindingsNonRecursive": [
+		{
+			"after": [
+				"<Esc>"
+			],
+			"before": [
+				"h",
+				"h"
+			]
+		}
+	],
+	"vim.leader": "<space>",
+	"vim.normalModeKeyBindingsNonRecursive": [
+		{
+			"after": [
+				"h"
+			],
+			"before": [
+				"h"
+			]
+		},
+		{
+			"after": [
+				"j"
+			],
+			"before": [
+				"t"
+			]
+		},
+		{
+			"after": [
+				"k"
+			],
+			"before": [
+				"n"
+			]
+		},
+		{
+			"after": [
+				"l"
+			],
+			"before": [
+				"s"
+			]
+		},
+		{
+			"after": [
+				"0"
+			],
+			"before": [
+				"H"
+			]
+		},
+		{
+			"after": [
+				"L"
+			],
+			"before": [
+				"T"
+			]
+		},
+		{
+			"after": [
+				"H"
+			],
+			"before": [
+				"N"
+			]
+		},
+		{
+			"after": [
+				"$"
+			],
+			"before": [
+				"S"
+			]
+		},
+		{
+			"after": [
+				"n"
+			],
+			"before": [
+				"j"
+			]
+		},
+		{
+			"after": [
+				"N"
+			],
+			"before": [
+				"J"
+			]
+		},
+		{
+			"after": [
+				"s"
+			],
+			"before": [
+				"k"
+			]
+		},
+		{
+			"after": [
+				"S"
+			],
+			"before": [
+				"K"
+			]
+		},
+		{
+			"after": [
+				"b"
+			],
+			"before": [
+				"m"
+			]
+		},
+		{
+			"after": [
+				"B"
+			],
+			"before": [
+				"M"
+			]
+		},
+		{
+			"after": [
+				"%"
+			],
+			"before": [
+				"w"
+			]
+		},
+		{
+			"after": [
+				"%"
+			],
+			"before": [
+				"W"
+			]
+		},
+		{
+			"after": [
+				"w"
+			],
+			"before": [
+				"z"
+			]
+		},
+		{
+			"after": [
+				"W"
+			],
+			"before": [
+				"Z"
+			]
+		},
+		{
+			"after": [
+				"<C-r>"
+			],
+			"before": [
+				"v",
+				"v"
+			]
+		}
+	],
+	"vim.sneak": true,
+	"vim.sneakReplacesF": true,
+	"vim.useSystemClipboard": true,
+	"vim.visualModeKeyBindingsNonRecursive": [
+		{
+			"after": [
+				"h"
+			],
+			"before": [
+				"h"
+			]
+		},
+		{
+			"after": [
+				"j"
+			],
+			"before": [
+				"t"
+			]
+		},
+		{
+			"after": [
+				"k"
+			],
+			"before": [
+				"n"
+			]
+		},
+		{
+			"after": [
+				"l"
+			],
+			"before": [
+				"s"
+			]
+		},
+		{
+			"after": [
+				"0"
+			],
+			"before": [
+				"H"
+			]
+		},
+		{
+			"after": [
+				"L"
+			],
+			"before": [
+				"T"
+			]
+		},
+		{
+			"after": [
+				"H"
+			],
+			"before": [
+				"N"
+			]
+		},
+		{
+			"after": [
+				"$"
+			],
+			"before": [
+				"S"
+			]
+		},
+		{
+			"after": [
+				"n"
+			],
+			"before": [
+				"j"
+			]
+		},
+		{
+			"after": [
+				"N"
+			],
+			"before": [
+				"J"
+			]
+		},
+		{
+			"after": [
+				"s"
+			],
+			"before": [
+				"k"
+			]
+		},
+		{
+			"after": [
+				"S"
+			],
+			"before": [
+				"K"
+			]
+		},
+		{
+			"after": [
+				"b"
+			],
+			"before": [
+				"m"
+			]
+		},
+		{
+			"after": [
+				"B"
+			],
+			"before": [
+				"M"
+			]
+		},
+		{
+			"after": [
+				"%"
+			],
+			"before": [
+				"w"
+			]
+		},
+		{
+			"after": [
+				"%"
+			],
+			"before": [
+				"W"
+			]
+		},
+		{
+			"after": [
+				"w"
+			],
+			"before": [
+				"z"
+			]
+		},
+		{
+			"after": [
+				"W"
+			],
+			"before": [
+				"Z"
+			]
+		},
+		{
+			"after": [
+				"<C-r>"
+			],
+			"before": [
+				"v",
+				"v"
+			]
+		}
+	],
+	"window.autoDetectColorScheme": true,
+	"workbench.preferredDarkColorTheme": "Cursor Dark High Contrast",
+	"workbench.preferredLightColorTheme": "Cursor Dark High Contrast",
+	"workbench.startupEditor": "none",
+	"workbench.welcomePage.walkthroughs.openOnInstall": false,
+	"editor.inlineSuggest.showToolbar": "always",
+	"git.autofetch": true,
+	"window.zoomLevel": 2,
+	"pieces.setCopilotLocation": true,
+	"terminal.external.osxExec": "Warp.app",
+	"pieces.autocomplete": true,
+	"pieces.cloudCapabilities": "Blended",
+	"pieces.os.updateNotifications": "Major",
+	"gitlens.showWelcomeOnInstall": false,
+	"gitlens.plusFeatures.enabled": false,
+	"editor.snippetSuggestions": "bottom",
+	"diffEditor.ignoreTrimWhitespace": false,
+	"workbench.editorAssociations": {
+		"*.mdx": "default",
+		"*.md": "workbench.editor.markdownPlan"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+	},
+	"[svelte]": {
+		"editor.defaultFormatter": "svelte.svelte-vscode"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "vscode.json-language-features"
+	},
+	"cmake.showOptionsMovedNotification": false,
+	"rust-analyzer.inlayHints.implicitDrops.enable": true,
+	"prettify-ts.enableHover": true,
+	"prettify-ts.viewNestedTypes": true,
+	"svelte.enable-ts-plugin": true,
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"prisma.showPrismaDataPlatformNotification": false,
+	"gitlens.advanced.messages": {
+		"suppressLineUncommittedWarning": true,
+		"suppressIntegrationDisconnectedTooManyFailedRequestsWarning": true,
+		"suppressIntegrationRequestTimedOutWarning": true
+	},
+	"editor.formatOnSave": true,
+	"vim.statusBarColorControl": true,
+	"vim.cursorStylePerMode.replace": "block-outline",
+	"vim.foldfix": true,
+	"vim.highlightedyank.enable": true,
+	"vim.scroll": 5,
+	"workbench.colorCustomizations": {
+		"statusBar.background": "#005f5f",
+		"statusBar.noFolderBackground": "#005f5f",
+		"statusBar.debuggingBackground": "#005f5f",
+		"statusBar.foreground": "#ffffff",
+		"statusBar.debuggingForeground": "#ffffff"
+	},
+	"github.copilot.editor.enableAutoCompletions": true,
+	"github.copilot.enable": {
+		"*": false,
+		"plaintext": false,
+		"markdown": false,
+		"scminput": false
+	},
+	"typescript.autoClosingTags": false,
+	"javascript.autoClosingTags": false,
+	"cursor.composer.shouldChimeAfterChatFinishes": true,
+	"cursor.composer.shouldAllowCustomModes": true,
+	"cursor.terminal.usePreviewBox": true,
+	"workbench.colorTheme": "Default High Contrast",
+	"window.commandCenter": true,
+	"workbench.experimental.share.enabled": true,
+	"editor.gotoLocation.multipleTypeDefinitions": "gotoAndPeek",
+	"editor.gotoLocation.multipleReferences": "gotoAndPeek",
+	"editor.gotoLocation.multipleImplementations": "gotoAndPeek",
+	"editor.gotoLocation.multipleDefinitions": "gotoAndPeek",
+	"editor.gotoLocation.multipleDeclarations": "gotoAndPeek",
+	"todo-tree.highlights.customHighlight": {
+		"INFO": {
+			"icon": "info"
+		},
+		"BUG": {
+			"icon": "bug"
+		},
+		"HACK": {
+			"icon": "tools"
+		},
+		"FIXME": {
+			"icon": "flame"
+		},
+		"XXX": {
+			"icon": "x"
+		},
+		"[ ]": {
+			"icon": "issue-draft"
+		},
+		"[x]": {
+			"icon": "issue-closed"
+		}
+	},
+	"[dockercompose]": {
+		"editor.insertSpaces": true,
+		"editor.tabSize": 2,
+		"editor.autoIndent": "advanced",
+		"editor.quickSuggestions": {
+			"other": true,
+			"comments": false,
+			"strings": true
+		},
+		"editor.defaultFormatter": "redhat.vscode-yaml"
+	},
+	"[github-actions-workflow]": {
+		"editor.defaultFormatter": "redhat.vscode-yaml"
+	},
+	"editor.minimap.enabled": true,
+	"workbench.preferredHighContrastLightColorTheme": "Solarized Light",
+	"cursor.inlineDiff.enablePerformanceProtection": false,
+	"application.shellEnvironmentResolutionTimeout": 15,
+	"terminal.integrated.enableMultiLinePasteWarning": "never",
+	"markdown.preview.typographer": true,
+	"markdown.updateLinksOnFileMove.enabled": "always",
+	"update.releaseTrack": "dev",
+	"update.mode": "silentlyApplyOnQuit",
+	"cursor.rpcFileLogger.enabled": true,
+	"[css]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"yaml.disableSchemaDetection": [
+		"**/.github/workflows/*.yml",
+		"**/.github/workflows/*.yaml",
+		"**/.gitea/workflows/*.yml",
+		"**/.gitea/workflows/*.yaml",
+		"**/.forgejo/workflows/*.yml",
+		"**/.forgejo/workflows/*.yaml"
+	],
+	"files.associations": {
+		"*.fml": "typescriptreact"
+	},
+	"cursor.composer.editorConversationDensity": "compact-all-grouped",
+	"cursor.general.reduceTransparency": true,
+	"cursor.composer.codeBlockWordWrap": true,
+	"mdEditorPlus.outlineVisible": false,
+	"mdEditorPlus.structureMapVisible": false,
+	"mdx-preview.preview.enableScripts": true,
+	"mdx-preview.preview.scrollSync": "bidirectional",
+	"mdx-preview.tailwind.enabled": "enabled",
+	"mdx-preview.components.unknownBehavior": "raw",
+	"mdx-preview.preview.codeBlockTheme": "atom-dark",
+	"cursor.composer.customChimeSoundPath": "/Users/dan/Downloads/scifi_sound.mp3",
+	"cursor.composer.queueMessageDefaultBehavior": "steer"
+}

@@ -1,5 +1,5 @@
 ---
-name: research
+name: ecosystem-research
 description: Research external projects, tools, and patterns to find improvements for the current codebase. Use when the user asks to investigate external repos, compare approaches, survey the ecosystem, or find patterns to extract from other projects.
 ---
 

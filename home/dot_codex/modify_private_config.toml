@@ -1,0 +1,12 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- $c := dict -}}
+{{- if .chezmoi.stdin }}{{ $c = fromToml .chezmoi.stdin }}{{ end -}}
+{{- $c = setValueAtPath "personality" "pragmatic" $c -}}
+{{- $c = setValueAtPath "tool_output_token_limit" 25000 $c -}}
+{{- if not (hasKey $c "model") }}{{ $c = setValueAtPath "model" "gpt-5.6-terra" $c }}{{ end -}}
+{{- if not (hasKey $c "model_reasoning_effort") }}{{ $c = setValueAtPath "model_reasoning_effort" "low" $c }}{{ end -}}
+{{- $home := .chezmoi.homeDir -}}
+{{- range list "repos/eddy/app" "repos/eddy/project-workbench" "gt" }}{{ $c = setValueAtPath (list "projects" (printf "%s/%s" $home .) "trust_level") "trusted" $c }}{{ end -}}
+{{- $c = setValueAtPath (list "plugins" "linear@openai-curated" "enabled") true $c -}}
+{{- $c = setValueAtPath (list "plugins" "github@openai-curated" "enabled") true $c -}}
+{{- toToml $c -}}

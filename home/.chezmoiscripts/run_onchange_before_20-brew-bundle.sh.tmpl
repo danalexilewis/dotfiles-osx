@@ -9,6 +9,9 @@
 {{- if .features.everyday -}}
 {{- $groups = append $groups "everyday" -}}
 {{- end -}}
+{{- if .features.localAi -}}
+{{- $groups = append $groups "localAi" -}}
+{{- end -}}
 {{- $masNames := list -}}
 {{- range $groups -}}
 {{- $group := index $.packages.darwin . -}}
@@ -29,6 +32,7 @@ fi
 echo "brew bundle..."
 
 HOMEBREW_BUNDLE_MAS_SKIP={{ $masNames | join " " | quote }} \
+  HOMEBREW_CASK_OPTS="${HOMEBREW_CASK_OPTS:+$HOMEBREW_CASK_OPTS }--adopt" \
   brew bundle --file=/dev/stdin <<'BREWFILE'
 {{- range $groups }}
 {{- $group := index $.packages.darwin . }}

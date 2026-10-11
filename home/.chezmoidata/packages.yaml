@@ -5,21 +5,33 @@ packages:
   darwin:
     core:
       brews:
-        - gh
-        - git-lfs
-        - vite-plus
-        - postgresql@16
-        - ncdu
-        - mole
-        - mas
+        - ast-grep
         - chezmoi
+        - fd
+        - gh
+        - git-filter-repo
+        - git-lfs
+        - jq
+        - just
+        - mas
+        - mole
+        - ncdu
+        - neovim
+        - pandoc
+        - postgresql@16
+        - ripgrep
+        - shellcheck
+        - uv
+        - vite-plus
       casks:
         - 1password
         - 1password-cli
+        - amethyst
         - cursor
         - ghostty
-        - amethyst
+        - google-chrome
         - lunar
+        - zed
       mas: []
     mobile:
       brews:
@@ -33,58 +45,114 @@ packages:
         - name: Xcode
           id: 497799835
     ai:
-      brews: []
+      brews:
+        - beads
+        - herdr
       casks:
-        - t3-code
+        - chatgpt
         - claude
         - claude-code
         - codex
+        - repo-prompt
+        - t3-code
+      mas: []
+    localAi:
+      brews:
+        - llm
+      casks:
+        - lm-studio
+        - ollama-app
+        - openwhispr
       mas: []
     everyday:
       brews: []
       casks:
-        - zen
-        - obsidian
         - affine
+        - cleanshot
+        - discord
         - figma
         - linear
-        - discord
-        - cleanshot
         - loom
+        - notion
+        - notion-calendar
+        - obsidian
         - screen-studio
+        - spotify
+        - whatsapp
+        - wispr-flow
+        - zen
         - zoom
-        - macwhisper
-        - readdle-spark
       mas:
         - name: 1Blocker
           id: 1365531024
+        - name: DaisyDisk
+          id: 411643860
+        - name: Slack
+          id: 803453959
+        - name: Spark Desktop
+          id: 6445813049
+        - name: Telegram
+          id: 747648890
+        - name: TickTick
+          id: 966085870
+        - name: Whisper Transcription
+          id: 1668083311
 
 cursor:
   extensions:
     - aaron-bond.better-comments
+    - alexkrechik.cucumberautocomplete
+    - andyyaldoo.vscode-json
+    - anysphere.remote-containers
     - anysphere.remote-ssh
+    - ardenivanov.svelte-intellisense
+    - astro-build.astro-vscode
+    - aviranrevach.md-editor-plus
     - bradlc.vscode-tailwindcss
     - chakra-ui.panda-css-vscode
     - christian-kohler.path-intellisense
     - coderabbit.coderabbit-vscode
     - davidanson.vscode-markdownlint
     - dbaeumer.vscode-eslint
+    - dendron.dendron
+    - dendron.dendron-paste-image
+    - dotiful.dotfiles-syntax-highlighting
     - eamodio.gitlens
     - editorconfig.editorconfig
     - esbenp.prettier-vscode
     - esdete.tailwind-rainbow
+    - evgeniypeshkov.syntax-highlighter
+    - figma.figma-vscode-extension
     - firsttris.vscode-jest-runner
+    - ggfincke.vsc-mdx-preview
+    - github.vscode-github-actions
     - gruntfuggly.todo-tree
+    - heybourn.headwind
+    - inferrinizzard.prettier-sql-vscode
     - irongeek.vscode-env
+    - janisdd.vscode-edit-csv
     - jcbuisson.vue
     - jumail.headwind
+    - leizongmin.node-module-intellisense
+    - mechatroner.rainbow-csv
+    - mhutchie.git-graph
+    - mohsen1.prettify-json
     - ms-playwright.playwright
+    - ms-toolsai.jupyter-keymap
+    - oliversturm.fix-json
     - openai.chatgpt
     - pinegrow.piny
+    - redhat.vscode-yaml
+    - richie5um2.vscode-sort-json
     - robole.marky-stats
     - rvest.vs-code-prettier-eslint
+    - simonsiefke.svg-preview
+    - stackbreak.comment-divider
+    - stephenwassell.light-high-contrast-theme
     - svelte.svelte-vscode
     - timitejumola.chakra-ui-doc
     - tumido.cron-explained
+    - unifiedjs.vscode-mdx
+    - vitest.explorer
     - vscodevim.vim
     - yoavbls.pretty-ts-errors

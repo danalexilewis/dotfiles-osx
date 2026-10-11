@@ -19,7 +19,7 @@ git clone git@github.com:danalexilewis/dotfiles-osx.git ~/repos/dotfiles-osx
 That installs Homebrew if needed, `brew install chezmoi`, then runs
 `chezmoi init --apply --source ~/repos/dotfiles-osx`.
 
-`chezmoi init` asks for a **machine profile** (only `full` today) and then each
+`chezmoi init` asks for a **machine profile** (`full` or `local-ai`) and then each
 feature toggle, using the profile's values as the defaults. Answers are stored
 in `~/.config/chezmoi/chezmoi.toml`. The source directory stays this checkout.
 
@@ -36,8 +36,9 @@ Skip Cursor extensions with `./bootstrap --no-extensions`.
 - Host-only secrets in `~/.zshrc.local`
 - SSH key for GitHub if you clone via SSH before 1Password/gh is ready
   (HTTPS clone works too: `git clone https://github.com/danalexilewis/dotfiles-osx.git`)
-- Apps already installed by hand (for example Spark Desktop) may need
-  `brew install --cask --adopt readdle-spark` before `brew bundle` will claim them
+- Apps already installed by hand may need
+  `brew install --cask --adopt <cask>` before `brew bundle` will claim them
+- Spark Desktop and Whisper Transcription come from the App Store (`mas`)
 
 ## Everyday commands
 
@@ -47,13 +48,15 @@ Skip Cursor extensions with `./bootstrap --no-extensions`.
 | `chezmoi apply` | Make `$HOME` match this repo |
 | `chezmoi status` | List drifted files |
 | `chezmoi re-add PATH` | Pull a **plain** file's live edits back into the repo |
-| `chezmoi merge PATH` | Three-way merge a **template** (git identity, Codex config) |
+| `chezmoi merge PATH` | Three-way merge a **template** (git identity) |
 | `chezmoi update` | `git pull` in the source repo, then apply |
 | `chezmoi init --prompt` | Re-ask profile / toggles / git identity |
 | `./doctor` | Verify apply, overrides, secrets, global MCPs |
 
 chezmoi uses **copy mode**. Edits made through an app UI show up as drift.
-Plain files come back with `re-add`; templates need `merge`.
+Plain files come back with `re-add`; templates need `merge`. Codex
+`~/.codex/config.toml` is a modify-template: it enforces a few keys and
+keeps everything the app writes.
 
 ## Profiles and toggles
 
@@ -61,17 +64,20 @@ Profiles live in [`home/.chezmoi.toml.tmpl`](home/.chezmoi.toml.tmpl). To add a
 profile later, add one dict entry there. Toggles can still override the
 profile on each machine.
 
-| Toggle | `full` default | What it controls |
-| ------ | -------------- | ---------------- |
-| `features.mobile` | on | Watchman, CocoaPods, Zulu 17, Android Studio, `android-cli`, Xcode, Android SDK 36, emulator, `eas-cli` |
-| `features.ai` | on | T3 Code, Claude, `claude-code`, `codex`, Cursor `agent` CLI, `~/.codex`, `~/.t3` |
-| `features.everyday` | on | Zen, Obsidian, AFFiNE, Figma, Linear, Discord, CleanShot, Loom, Screen Studio, Zoom, Whisper, **Spark**, 1Blocker |
-| `features.pi` | off | `~/.pi/agent/settings.json` |
-| `features.cursorExtensions` | on | Cursor extensions from package data |
+| Toggle | `full` | `local-ai` | What it controls |
+| ------ | ------ | ---------- | ---------------- |
+| `features.mobile` | on | on | Watchman, CocoaPods, Zulu 17, Android Studio, `android-cli`, Xcode, Android SDK 36, emulator, `eas-cli` |
+| `features.ai` | on | on | T3 Code, Claude, `claude-code`, `codex`, ChatGPT, Repo Prompt, `beads`, `herdr`, Cursor `agent` CLI, `~/.codex`, `~/.t3` |
+| `features.everyday` | on | on | Zen, Obsidian, AFFiNE, Figma, Linear, Discord, CleanShot, Loom, Screen Studio, Zoom, Notion, WhatsApp, Spotify, Wispr Flow, Spark, Whisper, Slack, Telegram, TickTick, DaisyDisk, 1Blocker |
+| `features.localAi` | off | on | Ollama, LM Studio, OpenWhispr, `llm` |
+| `features.pi` | off | off | `~/.pi/agent/settings.json` |
+| `features.cursorExtensions` | on | on | Cursor extensions from package data |
 
 **core** is always on: `gh`, `git-lfs`, `vite-plus`, `postgresql@16`, `ncdu`,
-`mole`, `mas`, `chezmoi`, 1Password + CLI, Cursor, Ghostty, Amethyst, Lunar,
-shell / git / Cursor / Ghostty / Amethyst / Vite+ config, and oh-my-zsh.
+`mole`, `mas`, `chezmoi`, `neovim`, `ripgrep`, `fd`, `jq`, `just`, `uv`,
+`shellcheck`, `ast-grep`, `pandoc`, `git-filter-repo`, 1Password + CLI,
+Cursor, Ghostty, Amethyst, Lunar, Zed, Chrome, shell / git / Cursor /
+Ghostty / Amethyst / Vite+ config, and oh-my-zsh.
 
 Change a toggle later with `chezmoi init --prompt`, or edit
 `~/.config/chezmoi/chezmoi.toml` and run `chezmoi apply`.
@@ -89,10 +95,11 @@ and installed by chezmoi scripts (`brew bundle` plus App Store / Xcode / CLIs).
 
 | Kind      | Packages                                                                                                   |
 | --------- | ---------------------------------------------------------------------------------------------------------- |
-| CLI       | `gh`, `git-lfs`, `vite-plus`, `postgresql@16`, `ncdu`, `mole`, `mas`, `chezmoi`, Watchman, CocoaPods       |
-| Core      | Cursor, Ghostty, Amethyst, Lunar, T3 Code, Claude, Claude Code (`claude`), Codex (`codex`), 1Password + CLI |
-| Everyday  | Zen, Obsidian, AFFiNE, Figma, Linear, Discord, CleanShot, Loom, Screen Studio, Zoom, Whisper Transcription, Spark |
-| App Store | 1Blocker, Xcode                                                                                            |
+| CLI       | `gh`, `git-lfs`, `vite-plus`, `postgresql@16`, `ncdu`, `mole`, `mas`, `chezmoi`, `neovim`, `ripgrep`, `fd`, `jq`, `just`, `uv`, `shellcheck`, `ast-grep`, `pandoc`, `git-filter-repo`, Watchman, CocoaPods |
+| Core      | Cursor, Ghostty, Amethyst, Lunar, Zed, Chrome, T3 Code, Claude, Claude Code (`claude`), Codex (`codex`), ChatGPT, Repo Prompt, 1Password + CLI |
+| Everyday  | Zen, Obsidian, AFFiNE, Figma, Linear, Discord, CleanShot, Loom, Screen Studio, Zoom, Notion, WhatsApp, Spotify, Wispr Flow |
+| App Store | 1Blocker, Spark Desktop, Whisper Transcription, Slack, Telegram, TickTick, DaisyDisk, Xcode                  |
+| Local AI  | Ollama, LM Studio, OpenWhispr, `llm` (when `features.localAi` is on)                                        |
 | Expo      | Zulu JDK 17, Android Studio, Android CLI, Android SDK 36, `eas`                                            |
 
 The Cursor app cask does not install the agent CLI, so a script installs
@@ -115,11 +122,11 @@ chezmoi copies these into `$HOME`.
 | `home/create_dot_gitconfig` | `~/.gitconfig` (created only if missing) |
 | `home/dot_config/git/config.tmpl` | `~/.config/git/config` |
 | `home/dot_config/git/ignore` | `~/.config/git/ignore` |
-| `home/Library/Application Support/Cursor/User/*` | Cursor User dir |
+| `home/private_Library/private_Application Support/private_Cursor/private_User/*` | Cursor User dir (`~/Library` stays mode 700) |
 | `home/dot_cursor/mcp.json` | `~/.cursor/mcp.json` |
 | `home/dot_cursor/skills/` | `~/.cursor/skills/` (only files listed here; extra skills are kept) |
 | `home/dot_t3/userdata/*` | `~/.t3/userdata/` |
-| `home/dot_codex/private_config.toml.tmpl` | `~/.codex/config.toml` |
+| `home/dot_codex/modify_private_config.toml` | `~/.codex/config.toml` (modify-template) |
 | `home/dot_config/vite-plus/config.json` | `~/.config/vite-plus/config.json` |
 | `home/dot_config/ghostty/config.ghostty` | `~/.config/ghostty/config.ghostty` |
 | `home/dot_config/amethyst/amethyst.yml` | `~/.config/amethyst/amethyst.yml` |
@@ -131,8 +138,10 @@ stays compatible with omz's own git-based updater.
 ## Per-machine (not in Git)
 
 - `~/.config/chezmoi/chezmoi.toml` — profile, toggles, git identity, `sourceDir`
-- `~/.gitconfig` — CodeRabbit `machineId` and anything from `git config --global`
-- `~/.zshrc.local` — host-specific env / secrets for the shell
+- `~/.gitconfig` — SSH signing, CodeRabbit `machineId`, and anything from `git config --global`
+- `~/.zshenv.local` — host-specific PATH for non-interactive shells (Foundry, Cargo)
+- `~/.zshrc.local` — host-specific env / secrets for interactive zsh
+- `~/.bashrc.local` — host-specific bash extras
 - Lunar Pro license (activate in the Lunar app; up to 5 Macs)
 - `~/.npmrc`, SSH keys, `gh` auth
 
@@ -149,8 +158,8 @@ Never commit `auth.json`, sessions, or trust state.
 
 Project-specific servers belong in the Eddy repos:
 
-- `~/repos/eddy/app/.cursor/mcp.json` — PostHog (OAuth), Sentry, Chakra UI, Linear
-- `~/repos/eddy/eddy.works/.cursor/mcp.json` — PostHog (OAuth), Mux, Linear
+- `~/repos/eddy/app/.cursor/mcp.json` — PostHog (OAuth), Sentry
+- `~/repos/eddy.works/.cursor/mcp.json` — PostHog (OAuth), Sentry
 
 ## Scripts
 

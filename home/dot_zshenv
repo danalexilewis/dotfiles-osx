@@ -2,3 +2,6 @@
 if [[ -f "$HOME/.config/vite-plus/env" ]]; then
   . "$HOME/.config/vite-plus/env"
 fi
+
+# Per-machine PATH for non-interactive shells (Foundry, Cargo, etc.)
+[[ -f "$HOME/.zshenv.local" ]] && source "$HOME/.zshenv.local"
